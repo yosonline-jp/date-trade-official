@@ -61,7 +61,8 @@ export default function RecordList() {
 			.select(
 				"id, type, stock_code, stock_name, buy_price, sell_price, quantity, profit, memo, trade_date, trade_type, created_at, users(id, account,nickname, avatar)"
 			)
-			.order("created_at", { ascending: false })
+			.eq("visibility", "public")
+		.order("created_at", { ascending: false })
 			.range(pageNumber * 20, pageNumber * 20 + 19);
 
 		if (error) {

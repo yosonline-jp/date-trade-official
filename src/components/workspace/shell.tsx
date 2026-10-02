@@ -29,8 +29,17 @@ import { signOutAction } from "@/app/actions";
 function LogoutButton() {
   const { pending } = useFormStatus();
   return (
-    <button type="submit" className="terminal-nav-link workspace-logout" disabled={pending} aria-busy={pending}>
-      {pending ? <Loader2 size={18} className="animate-spin" /> : <LogOut size={18} />}
+    <button
+      type="submit"
+      className="terminal-nav-link workspace-logout"
+      disabled={pending}
+      aria-busy={pending}
+    >
+      {pending ? (
+        <Loader2 size={18} className="animate-spin" />
+      ) : (
+        <LogOut size={18} />
+      )}
       <span>{pending ? "ログアウト中…" : "ログアウト"}</span>
     </button>
   );
@@ -59,6 +68,8 @@ const accountLinks = [
     label: "収支カレンダー",
     icon: BarChart3,
   },
+  { href: "/dashboard/analytics", label: "成績分析", icon: Activity },
+  { href: "/dashboard/reports", label: "振り返りレポート", icon: BookOpen },
   { href: "/dashboard/watchlist", label: "ウォッチリスト", icon: Star },
   { href: "/dashboard/profile", label: "プロフィール", icon: Settings2 },
 ];

@@ -1,6 +1,14 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import TradeEditor from "@/components/journal/trade-editor";
+import CsvImport from "@/components/journal/csv-import";
+import {
+  loadOwnJournalTrades,
+  deleteJournalTrade,
+} from "@/app/actions/journal";
+import type { Trade } from "@/lib/journal";
 import { format, subDays } from "date-fns";
 import { ja } from "date-fns/locale";
 import {
@@ -15,7 +23,6 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { toast } from "sonner";
-import { createClient } from "@/utils/supabase/client";
 import "./trade-records-responsive.css";
 import { TradeAddModal } from "./trade-add-modal";
 import { DeleteConfirmModal } from "./delete-confirm-modal";
@@ -24,19 +31,7 @@ import TradeProgressClient, {
   type MonthProfit,
 } from "./trade-progress-client";
 
-interface TradeRecord {
-  id: number;
-  stock_code: string;
-  stock_name: string;
-  buy_price: number;
-  sell_price: number;
-  quantity: number;
-  profit: number;
-  trade_date: string;
-  trade_type: string;
-  memo: string | null;
-  type: "real" | "demo";
-}
+type TradeRecord = Trade;
 
 type TradeMode = "real" | "demo";
 type ResultFilter = "all" | "wins" | "losses";
@@ -48,15 +43,17 @@ const profitOf = (record: TradeRecord) => Number(record.profit) || 0;
 
 export function TradeRecordsClient({
   initialRecords,
-  userId,
 }: {
   initialRecords: TradeRecord[];
   userId: string;
 }) {
+  const searchParams = useSearchParams();
+  const [editTarget, setEditTarget] = useState<Trade | null>(null);
+  const [showImport, setShowImport] = useState(false);
   const [records, setRecords] = useState(initialRecords);
   const [mode, setMode] = useState<TradeMode>("real");
   const [filter, setFilter] = useState<ResultFilter>("all");
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState(searchParams.get("date") || "");
   const [loading, setLoading] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<TradeRecord | null>(null);
@@ -124,7 +121,7 @@ export function TradeRecordsClient({
         (filter === "wins" ? profitOf(record) > 0 : profitOf(record) < 0);
       const searchMatches =
         !term ||
-        `${record.stock_name} ${record.stock_code} ${record.memo ?? ""}`
+        `${record.trade_date} ${record.stock_name} ${record.stock_code} ${record.memo ?? ""} ${record.entry_reason || ""} ${record.reflection || ""} ${record.tags?.join(" ") || ""}`
           .toLocaleLowerCase()
           .includes(term);
       return resultMatches && searchMatches;
@@ -134,14 +131,7 @@ export function TradeRecordsClient({
   async function refreshRecords() {
     setLoading(true);
     try {
-      const { data, error } = await createClient()
-        .from("trade_records")
-        .select(
-          "id, stock_code, stock_name, buy_price, sell_price, quantity, profit, trade_date, trade_type, memo, type",
-        )
-        .eq("user_id", userId)
-        .order("trade_date", { ascending: false });
-      if (error) throw error;
+      const data = await loadOwnJournalTrades();
       setRecords(data ?? []);
     } catch (error) {
       console.error("Failed to refresh trade records:", error);
@@ -155,17 +145,14 @@ export function TradeRecordsClient({
     if (!deleteTarget) return;
     const target = deleteTarget;
     try {
-      const { error } = await createClient()
-        .from("trade_records")
-        .delete()
-        .eq("id", target.id)
-        .eq("user_id", userId);
-      if (error) throw error;
+      const { imageRemoved } = await deleteJournalTrade(target.id);
       setRecords((current) =>
         current.filter((record) => record.id !== target.id),
       );
       setDeleteTarget(null);
       toast.success("取引記録を削除しました。");
+      if (!imageRemoved)
+        toast.warning("添付画像の削除は完了していません。再度お試しください。");
     } catch (error) {
       console.error("Failed to delete trade record:", error);
       toast.error("削除できませんでした。もう一度お試しください。");
@@ -190,6 +177,20 @@ export function TradeRecordsClient({
         </button>
       </div>
 
+      <div className="journal-actions">
+        <button
+          className="terminal-button secondary"
+          onClick={() => setShowImport(true)}
+        >
+          CSVを取り込む
+        </button>
+        <a className="terminal-button secondary" href="/dashboard/analytics">
+          成績分析
+        </a>
+        <a className="terminal-button secondary" href="/dashboard/reports">
+          振り返りレポート
+        </a>
+      </div>
       <div className="trade-mode-bar" aria-label="取引モード">
         <div className="trade-mode-switch">
           <button
@@ -354,6 +355,13 @@ export function TradeRecordsClient({
                     </div>
                     <button
                       className="trade-delete"
+                      onClick={() => setEditTarget(record)}
+                      aria-label={record.stock_name + "の取引と振り返りを編集"}
+                    >
+                      編集
+                    </button>
+                    <button
+                      className="trade-delete"
                       onClick={() => setDeleteTarget(record)}
                       aria-label={`${record.stock_name || record.stock_code}の取引を削除`}
                     >
@@ -386,6 +394,10 @@ export function TradeRecordsClient({
                       </dd>
                     </div>
                   </dl>
+                  <p>
+                    {record.visibility === "private" ? "非公開" : "公開"} ·{" "}
+                    {record.tags?.join(" / ")}
+                  </p>
                   {record.memo && (
                     <p className="trade-mobile-memo">{record.memo}</p>
                   )}
@@ -452,9 +464,26 @@ export function TradeRecordsClient({
                           className="trade-memo"
                           title={record.memo ?? undefined}
                         >
-                          {record.memo || "—"}
+                          <div>
+                            {record.memo || "—"}
+                            <small>
+                              {record.visibility === "private"
+                                ? "非公開"
+                                : "公開"}{" "}
+                              {record.tags?.join(" / ")}
+                            </small>
+                          </div>
                         </td>
                         <td>
+                          <button
+                            className="trade-delete"
+                            onClick={() => setEditTarget(record)}
+                            aria-label={
+                              record.stock_name + "の取引と振り返りを編集"
+                            }
+                          >
+                            編集
+                          </button>
                           <button
                             className="trade-delete"
                             onClick={() => setDeleteTarget(record)}
@@ -480,6 +509,22 @@ export function TradeRecordsClient({
         )}
       </section>
 
+      {editTarget && (
+        <TradeEditor
+          record={editTarget}
+          type={editTarget.type}
+          onClose={() => setEditTarget(null)}
+          onSuccess={refreshRecords}
+        />
+      )}
+      {showImport && (
+        <CsvImport
+          existing={records}
+          type={mode}
+          onClose={() => setShowImport(false)}
+          onSuccess={refreshRecords}
+        />
+      )}
       <TradeAddModal
         open={showAddModal}
         onClose={() => setShowAddModal(false)}

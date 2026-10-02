@@ -2,6 +2,7 @@
 import { ArrowUpRight, Plus } from "lucide-react";
 import { redirect } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
+import { allTrades } from "@/lib/journal-server";
 import { PriceChart } from "@/components/workspace/price-chart";
 export default async function DashboardPage() {
   const db = await createClient();
@@ -12,17 +13,14 @@ export default async function DashboardPage() {
   const since = new Date(Date.now() - 90 * 86400000).toISOString().slice(0, 10);
   const [profile, result] = await Promise.all([
     db.from("users").select("nickname").eq("id", user.id).maybeSingle(),
-    db
-      .from("trade_records")
-      .select("id,profit,stock_code,stock_name,trade_date,trade_type", {
-        count: "exact",
+    allTrades(user.id)
+      .then((rows) => {
+        const data = rows.filter(
+          (t) => t.type === "real" && t.trade_date >= since,
+        );
+        return { data, count: data.length, error: null };
       })
-      .eq("user_id", user.id)
-      .eq("type", "real")
-      .gte("trade_date", since)
-      .order("trade_date", { ascending: false })
-      .order("id", { ascending: false })
-      .limit(1000),
+      .catch(() => ({ data: [], count: 0, error: true })),
   ]);
   const trades = result.data ?? [];
   const net = trades.reduce((sum, t) => sum + Number(t.profit || 0), 0);
@@ -66,10 +64,7 @@ export default async function DashboardPage() {
       )}
       <div className="market-meta">
         <span>直近90日 · 実取引</span>
-        <span>
-          最新{trades.length}件
-          {(result.count ?? 0) > 1000 ? "（集計上限1000件）" : ""}
-        </span>
+        <span>{trades.length}件を集計</span>
       </div>
       <section className="index-grid">
         {[

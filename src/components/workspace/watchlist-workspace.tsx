@@ -28,6 +28,10 @@ export async function WatchlistWorkspace() {
     .select("id,stock_code,stock_name,created_at")
     .eq("user_id", user.id)
     .order("created_at", { ascending: false });
+  const notesResult = await db
+    .from("watchlist_notes")
+    .select("stock_code,category,note,target_price")
+    .eq("user_id", user.id);
   const codes = watchlist?.map((item) => item.stock_code) ?? [];
   const refreshFailed = await ensureFreshStocks(codes);
   const [chartsResult, pricesResult] = await Promise.all([
@@ -77,7 +81,10 @@ export async function WatchlistWorkspace() {
           銘柄を追加 <ArrowUpRight size={15} />
         </Link>
       </div>
-      {(error || chartsResult.error || pricesResult.error) && (
+      {(error ||
+        chartsResult.error ||
+        pricesResult.error ||
+        notesResult.error) && (
         <p className="data-notice" role="alert">
           一部のデータを取得できませんでした。
         </p>
@@ -89,6 +96,7 @@ export async function WatchlistWorkspace() {
         </p>
       )}
       <WatchlistTable
+        notes={notesResult.data ?? []}
         watchlist={watchlist ?? []}
         candlesList={candlesList}
         prices={pricesResult.data ?? []}
