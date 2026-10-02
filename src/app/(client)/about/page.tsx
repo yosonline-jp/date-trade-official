@@ -1,120 +1,193 @@
-import React from "react";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import { LineChart, Brain, Users, Rocket } from "lucide-react";
-
+import Link from "next/link";
+import {
+  ArrowRight,
+  ArrowUpRight,
+  BookOpen,
+  ChartCandlestick,
+  ChartNoAxesCombined,
+  ClipboardPen,
+  Eye,
+  RefreshCw,
+  ShieldCheck,
+} from "lucide-react";
+import { InformationHeader } from "@/components/pages/site-information";
 export const metadata = {
-	title: "デイトレード.netとは？ | デイトレード.net",
-	description:
-		"デイトレード.netは、個人トレーダーの成長を支援する学習・分析・記録プラットフォームです。取引履歴や心理状態の可視化、データ分析、コミュニティ連携を通じて、トレードスキルの向上をサポートします。",
+  title: "デイトレード.netについて | デイトレード.net",
+  description:
+    "日本株を調べ、取引を記録し、データで振り返る。デイトレード.netは、日々の判断を見直すための学習・分析・記録プラットフォームです。",
 };
-
+const features = [
+  {
+    icon: ChartCandlestick,
+    title: "調べる",
+    tag: "RESEARCH",
+    description:
+      "日本株の銘柄情報とチャートを確認。気になる銘柄はウォッチリストにまとめられます。",
+    href: "/stocks",
+    link: "日本株を探す",
+  },
+  {
+    icon: ClipboardPen,
+    title: "記録する",
+    tag: "JOURNAL",
+    description:
+      "売買価格・手数料・エントリー理由を残す。CSV取り込みやチャート画像の保存にも対応します。",
+    href: "/dashboard/trade-records",
+    link: "取引記録を開く",
+  },
+  {
+    icon: ChartNoAxesCombined,
+    title: "振り返る",
+    tag: "REFLECTION",
+    description:
+      "収支カレンダーと成績分析で傾向を確認。週次・月次レポートで、次に試すことを言葉にします。",
+    href: "/dashboard/analytics",
+    link: "成績分析を開く",
+  },
+];
 export default function AboutPage() {
-	return (
-		<div className="max-w-4xl mx-auto py-12">
-			{/* ヘッダー */}
-			<h1 className="text-3xl font-bold mb-6 text-center">
-				デイトレード.netとは？
-			</h1>
-			<p className="text-center text-muted-foreground mb-12 leading-relaxed">
-				「デイトレード.net」は、個人トレーダーの成長をサポートするために設計された
-				学習・分析・記録プラットフォームです。
-				トレードの「記録・分析・メンタル管理」をワンストップで行い、
-				あなたのトレードスキルを継続的に進化させます。
-			</p>
-
-			{/* ミッション */}
-			<Card className="mb-10">
-				<CardHeader className="flex flex-row items-center gap-3">
-					<Rocket className="w-6 h-6 text-blue-500" />
-					<CardTitle>ミッション：トレーダーの「成長」を支える</CardTitle>
-				</CardHeader>
-				<CardContent className="text-sm leading-relaxed space-y-3">
-					<p>
-						デイトレードは「才能」ではなく「習慣」で結果が決まります。
-						デイトレード.netは、日々の学びと振り返りをシステム化し、
-						誰でも継続的に上達できる環境を提供します。
-					</p>
-					<ul className="list-disc pl-6 space-y-1">
-						<li>取引履歴・勝率・心理状態を自動で可視化</li>
-						<li>データに基づく自己分析で「感覚トレード」から卒業</li>
-						<li>初心者でも理解しやすい基礎知識コンテンツを提供</li>
-					</ul>
-				</CardContent>
-			</Card>
-
-			{/* 特徴 */}
-			<Card className="mb-10">
-				<CardHeader className="flex flex-row items-center gap-3">
-					<LineChart className="w-6 h-6 text-green-500" />
-					<CardTitle>特徴：トレードを「見える化」する</CardTitle>
-				</CardHeader>
-				<CardContent className="text-sm leading-relaxed space-y-3">
-					<p>
-						デイトレード.netの最大の特徴は、取引と心理の両方を記録・分析できる点です。
-						感情や判断の傾向を数値化し、成功と失敗のパターンを明確にします。
-					</p>
-					<ul className="list-disc pl-6 space-y-1">
-						<li>トレード履歴をグラフや統計で自動可視化</li>
-						<li>心理ログによるメンタル分析機能</li>
-						<li>データに基づいた改善提案（AI分析機能も開発予定）</li>
-					</ul>
-				</CardContent>
-			</Card>
-
-			{/* コミュニティビジョン */}
-			<Card className="mb-10">
-				<CardHeader className="flex flex-row items-center gap-3">
-					<Users className="w-6 h-6 text-orange-500" />
-					<CardTitle>ビジョン：一人でも孤独にならないトレード環境を</CardTitle>
-				</CardHeader>
-				<CardContent className="text-sm leading-relaxed space-y-3">
-					<p>
-						トレードは孤独な作業ですが、学びはチームで行う方が早く、深く身につきます。
-						今後は、他のトレーダーと匿名で実績を共有したり、
-						成長の過程を比較できる機能を順次追加予定です。
-					</p>
-					<ul className="list-disc pl-6 space-y-1">
-						<li>コミュニティ連携による知識共有</li>
-						<li>勝率や取引傾向を匿名比較</li>
-						<li>上級者のトレード戦略を参考にできる分析ページ</li>
-					</ul>
-				</CardContent>
-			</Card>
-
-			{/* 開発背景 */}
-			<Card className="mb-10">
-				<CardHeader className="flex flex-row items-center gap-3">
-					<Brain className="w-6 h-6 text-purple-500" />
-					<CardTitle>開発背景</CardTitle>
-				</CardHeader>
-				<CardContent className="text-sm leading-relaxed space-y-3">
-					<p>
-						開発者自身もトレード経験者であり、
-						「感情のコントロール」「データ管理」「学びの継続」の難しさを痛感してきました。
-						その経験をもとに、トレーダーがより合理的に成長できるツールを目指して開発しています。
-					</p>
-					<p>
-						シンプルで使いやすいUIと、
-						本当に役立つ機能だけを厳選して提供することを大切にしています。
-					</p>
-				</CardContent>
-			</Card>
-
-			{/* 区切り */}
-			<Separator className="my-12" />
-
-			{/* フッター */}
-			<div className="text-center space-y-3">
-				<h2 className="text-2xl font-bold">
-					あなたのトレードを「習慣化」しよう
-				</h2>
-				<p className="text-sm text-muted-foreground">
-					デイトレード.netは、ただの記録アプリではなく、
-					あなたの成長を支える「相棒」です。
-					毎日の小さな一歩が、確かなスキルへとつながります。
-				</p>
-			</div>
-		</div>
-	);
+  return (
+    <div className="info-page about-page">
+      <InformationHeader
+        active="/about"
+        eyebrow="ABOUT DAYTRADE"
+        title="記録から、次の判断へ"
+        description="デイトレード.netは、日本株を調べ、取引を記録し、日々の判断を振り返るためのワークスペースです。"
+      />
+      <section className="about-hero">
+        <div>
+          <p className="eyebrow">SMALL STEPS. BETTER HABITS.</p>
+          <h2>
+            今日のトレードに、
+            <br />
+            <span>明日への気づきを。</span>
+          </h2>
+          <p>
+            利益も、損失も、そのとき考えていたことも。
+            <br />
+            ひとつの記録に残すことで、結果だけでは見えなかった自分の判断を見直せます。
+          </p>
+          <div className="info-actions">
+            <Link className="terminal-button" href="/sign-up">
+              記録をはじめる
+              <ArrowUpRight size={16} aria-hidden="true" />
+            </Link>
+            <Link className="info-text-link" href="/stocks">
+              まずは銘柄を見てみる
+              <ArrowRight size={15} aria-hidden="true" />
+            </Link>
+          </div>
+        </div>
+        <figure className="about-cycle">
+          <div className="about-cycle-mark">
+            <ChartCandlestick size={42} aria-hidden="true" />
+            <span>
+              DAYTRADE<span className="heading-dot">.</span>
+            </span>
+            <small>YOUR TRADING WORKSPACE</small>
+          </div>
+          <figcaption>
+            <span>
+              <ClipboardPen size={16} aria-hidden="true" />
+              記録
+            </span>
+            <ArrowRight size={14} aria-hidden="true" />
+            <span>
+              <ChartNoAxesCombined size={16} aria-hidden="true" />
+              分析
+            </span>
+            <ArrowRight size={14} aria-hidden="true" />
+            <span>
+              <RefreshCw size={16} aria-hidden="true" />
+              振り返り
+            </span>
+          </figcaption>
+        </figure>
+      </section>
+      <section
+        className="about-features"
+        aria-labelledby="about-features-title"
+      >
+        <div className="info-section-title">
+          <div>
+            <p className="eyebrow">ONE WORKSPACE</p>
+            <h2 id="about-features-title">調べる、記録する、振り返る。</h2>
+          </div>
+          <p>日々のトレードを、ひとつの場所で。</p>
+        </div>
+        <div className="about-feature-grid">
+          {features.map(({ icon: Icon, ...f }, i) => (
+            <article className="about-feature" key={f.title}>
+              <div className="about-feature-top">
+                <Icon size={22} aria-hidden="true" />
+                <small>
+                  0{i + 1} / {f.tag}
+                </small>
+              </div>
+              <h3>{f.title}</h3>
+              <p>{f.description}</p>
+              <Link href={f.href}>
+                {f.link}
+                <ArrowUpRight size={15} aria-hidden="true" />
+              </Link>
+            </article>
+          ))}
+        </div>
+      </section>
+      <section className="about-principles">
+        <div>
+          <p className="eyebrow">OUR APPROACH</p>
+          <h2>
+            自分のペースで、
+            <br />
+            自分のトレードを育てる。
+          </h2>
+          <p>
+            特定の売買や成果を約束するのではなく、判断を振り返るための材料を提供します。
+          </p>
+          <Link href="/learn/basics" className="info-text-link">
+            <BookOpen size={16} aria-hidden="true" />
+            トレードの基礎を学ぶ
+            <ArrowRight size={15} aria-hidden="true" />
+          </Link>
+        </div>
+        <div className="about-principle-list">
+          <article>
+            <ShieldCheck size={21} aria-hidden="true" />
+            <div>
+              <h3>公開する記録は、自分で選ぶ。</h3>
+              <p>
+                新しい取引記録は非公開が初期設定。公開にした記録は、メモや画像もほかの利用者が閲覧できます。
+              </p>
+            </div>
+          </article>
+          <article>
+            <Eye size={21} aria-hidden="true" />
+            <div>
+              <h3>データの時点を確かめる。</h3>
+              <p>
+                株価・指数には更新の遅延があります。表示された更新日と配信元の情報を確認してご利用ください。
+              </p>
+            </div>
+          </article>
+          <article>
+            <RefreshCw size={21} aria-hidden="true" />
+            <div>
+              <h3>振り返りを、次の行動につなげる。</h3>
+              <p>
+                記録した理由や反省点を読み返し、週次・月次レポートに次の目標を残せます。
+              </p>
+            </div>
+          </article>
+        </div>
+      </section>
+      <div className="about-bottom">
+        <p>サービスへのご意見や、不具合のご報告はこちらへ。</p>
+        <Link href="/contact">
+          お問い合わせ
+          <ArrowUpRight size={16} aria-hidden="true" />
+        </Link>
+      </div>
+    </div>
+  );
 }

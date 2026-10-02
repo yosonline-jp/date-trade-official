@@ -228,7 +228,7 @@ export function WorkspaceShell({
         <footer className="terminal-footer">
           <span>© {new Date().getFullYear()} DAYTRADE.　デイトレード.net</span>
           <div>
-            <Link href="/about">About</Link>
+            <Link href="/about">ABOUT</Link>
             <Link href="/contact">お問い合わせ</Link>
             <Link href="/privacy-policy">プライバシー</Link>
             <Link href="/disclaimer">免責事項</Link>

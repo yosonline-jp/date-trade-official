@@ -23,7 +23,8 @@ https://docs.aws.amazon.com/amplify/latest/userguide/ssr-amplify-support.html
 | NEXT_PUBLIC_SUPABASE_URL | Supabase URL |
 | NEXT_PUBLIC_SUPABASE_ANON_KEY | 公開anon key |
 | NEXT_PUBLIC_MAIN_URL | https:// を含む公開サイトURL |
-| SUPABASE_ROLE_KEY | 既存Bot実績のサーバー側読み取り・アカウント削除 |
+| SUPABASE_SECRET_KEY | 推奨：Bot実績のサーバー側読み取り・アカウント削除 |
+| SUPABASE_ROLE_KEY | Secret Key未設定時の既存service_role互換キー |
 | NEXT_PUBLIC_SUPABASE_BUCKET | 既存アップロード処理を使う場合 |
 | NEXT_PUBLIC_GA_ID | 任意のGoogle Analytics ID |
 
@@ -38,7 +39,7 @@ Amplifyのビルド環境変数をSSRから利用できるよう、`scripts/ampl
 
 ## DBとCMS
 
-既存スキーマを使うためSQLマイグレーションは不要です。CMSは `users.role = 'admin'` を検証します。Supabase RLSとStorageポリシーは既存設定を引き継ぎます。管理者認証を使った保存の確認は、本番公開前に既存管理者アカウントで実施してください。
+ジャーナルとアカウント削除にはSQLマイグレーションが必要です。新しい環境では `docs/journal.md` と `docs/account-deletion.md` のDB更新手順を適用してください。CMSは `users.role = 'admin'` を検証します。Supabase RLSとStorageポリシーは既存設定を引き継ぎます。管理者認証を使った保存の確認は、本番公開前に既存管理者アカウントで実施してください。
 
 ## この作業の範囲
 

@@ -1,247 +1,74 @@
-﻿"use client";
-
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-
-import { Button } from "@/components/ui/button";
+import Link from "next/link";
 import {
-	Form,
-	FormControl,
-	FormField,
-	FormItem,
-	FormLabel,
-	FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { createClient } from "@/utils/supabase/client";
-import { Card } from "@/components/ui/card";
-
-const ContactSchema = z.object({
-	name: z
-		.string()
-		.min(2, {
-			message: "お名前は2文字以上で入力してください。",
-		})
-		.max(20, {
-			message: "お名前は20文字以下で入力してください。",
-		}),
-	email: z
-		.object({
-			email: z
-				.string()
-				.min(1, "メールアドレスを入力してください。")
-				.email("メールアドレスの形式で入力してください"),
-			email_confirm: z
-				.string()
-				.min(1, "確認用のメールアドレスを入力してください。"),
-		})
-		.superRefine(({ email, email_confirm }, ctx) => {
-			if (email !== email_confirm) {
-				ctx.addIssue({
-					path: ["email_confirm"],
-					code: "custom",
-					message: "メールアドレスが一致しません。",
-				});
-			}
-		}),
-	title: z
-		.string()
-		.min(2, {
-			message: "お問い合わせタイトルは2文字以上で入力してください。",
-		})
-		.max(100, {
-			message: "お問い合わせタイトルは100文字以下で入力してください。",
-		}),
-	content: z
-		.string()
-		.min(2, {
-			message: "お問い合わせ内容は2文字以上で入力してください。",
-		})
-		.max(300, {
-			message: "お問い合わせ内容は300文字以下で入力してください。",
-		}),
-});
-
-export default function Index() {
-	const [sended, setSended] = useState(false);
-	const [isLoading, setIsLoading] = useState(false);
- const [submitError, setSubmitError] = useState("");
-
-	const form = useForm<z.infer<typeof ContactSchema>>({
-		resolver: zodResolver(ContactSchema),
-		defaultValues: {
-			name: "",
-			email: {
-				email: "",
-				email_confirm: "",
-			},
-			title: "",
-			content: "",
-		},
-	});
-
-	const onSubmit = async (data: z.infer<typeof ContactSchema>) => {
-		setIsLoading(true); setSubmitError("");
-		const supabase = createClient();
-		const { name, email, title, content } = data;
-		const { error } = await supabase
-			.from("contact")
-			.insert({
-				name,
-				email: email.email,
-				title,
-				content,
-			})
-			.single();
-		setIsLoading(false);
-		if (error) { setSubmitError("送信できませんでした。時間をおいて再度お試しください。"); return; }
-  form.reset();
-		setSended(true);
-	};
-
-	return (
-		<>
-      {submitError && <p role="alert" className="data-notice">{submitError}</p>}
-			<h1 className="mb-8 text-center text-2xl font-bold md:mb-12 lg:text-3xl">
-				お問い合わせ
-			</h1>
-			{sended ? (
-				<div className="my-12 text-center">
-					このたびは、お問い合わせいただき、誠にありがとうございます。
-					<br />
-					お問い合わせを確かに承りましたので、ご連絡いたします!
-				</div>
-			) : isLoading ? (
-				<div className="relative mt-6 min-h-[140px] w-full">
-					<div className="absolute left-0 top-0 z-10 flex h-full w-full items-center justify-center">
-						<div className="flex min-h-[300px] items-center justify-center">
-							<div className="h-20 w-20 animate-spin rounded-full border-4 border-dashed" />
-						</div>
-					</div>
-				</div>
-			) : (
-				<>
-					<div className="mx-auto max-w-2xl p-4 font-bold text-center">
-						デイトレード.netは、
-						<br />
-						お客様のお問い合わせにお答えいたします
-					</div>
-					<Card className="mx-auto mt-6 w-full max-w-lg p-6">
-						<Form {...form}>
-							<form onSubmit={form.handleSubmit(onSubmit)}>
-								<FormField
-									control={form.control}
-									name="name"
-									render={({ field }) => (
-										<FormItem className="my-4">
-											<FormLabel className="font-bold">お名前*</FormLabel>
-											<FormControl>
-												<Input
-													className="w-full"
-													placeholder="お名前を入力してください"
-													{...field}
-												/>
-											</FormControl>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-								<FormField
-									control={form.control}
-									name="email.email"
-									render={({ field }) => (
-										<FormItem className="my-4">
-											<FormLabel className="font-bold">
-												メールアドレス*
-											</FormLabel>
-											<FormControl>
-												<Input
-													type="email"
-													className="w-full"
-													placeholder="メールアドレスを入力してください"
-													{...field}
-												/>
-											</FormControl>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-								<FormField
-									control={form.control}
-									name="email.email_confirm"
-									render={({ field }) => (
-										<FormItem className="my-4">
-											<FormLabel className="font-bold">
-												確認用のメールアドレス*
-											</FormLabel>
-											<FormControl>
-												<Input
-													type="email"
-													className="w-full"
-													placeholder="確認用のメールアドレスを入力してください"
-													{...field}
-												/>
-											</FormControl>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-								<FormField
-									control={form.control}
-									name="title"
-									render={({ field }) => (
-										<FormItem className="my-4">
-											<FormLabel className="font-bold">
-												お問い合わせタイトル*
-											</FormLabel>
-											<FormControl>
-												<Input
-													className="w-full"
-													placeholder="お問い合わせタイトルを入力してください"
-													{...field}
-												/>
-											</FormControl>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-								<FormField
-									control={form.control}
-									name="content"
-									render={({ field }) => (
-										<FormItem className="my-4">
-											<FormLabel className="font-bold">
-												お問い合わせ内容*
-											</FormLabel>
-											<FormControl>
-												<Textarea
-													rows={10}
-													className="w-full"
-													placeholder="お問い合わせ内容を入力してください"
-													{...field}
-												/>
-											</FormControl>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-								<div className="mt-6 flex items-center justify-center">
-									<Button
-										className="mb-4 w-full max-w-[200px] md:mb-0"
-										type="submit"
-									>
-										送信する
-									</Button>
-								</div>
-							</form>
-						</Form>
-					</Card>
-				</>
-			)}
-		</>
-	);
+  ArrowUpRight,
+  Bug,
+  Lightbulb,
+  MessageSquare,
+  ShieldCheck,
+} from "lucide-react";
+import ContactForm from "@/components/pages/contact-form";
+import { InformationHeader } from "@/components/pages/site-information";
+export const metadata = {
+  title: "お問い合わせ | デイトレード.net",
+  description:
+    "機能についてのご質問、不具合の報告、ご意見・ご要望はこちらから。デイトレード.net運営事務局へのお問い合わせフォームです。",
+};
+export default function ContactPage() {
+  return (
+    <div className="info-page contact-page">
+      <InformationHeader
+        active="/contact"
+        eyebrow="CONTACT & SUPPORT"
+        title="お問い合わせ"
+        description="使い方のご質問、不具合のご報告、こんな機能がほしいというアイデア。あなたの声をお聞かせください。"
+      />
+      <div className="contact-layout">
+        <aside className="contact-aside">
+          <section className="contact-support-card">
+            <span className="contact-support-icon">
+              <MessageSquare size={25} aria-hidden="true" />
+            </span>
+            <p className="eyebrow">WE ARE LISTENING</p>
+            <h2>
+              より使いやすい場所を、
+              <br />
+              一緒につくる。
+            </h2>
+            <p>
+              サービスについてのお問い合わせを、運営事務局で受け付けています。
+            </p>
+            <div className="contact-topics">
+              <span>
+                <MessageSquare size={16} aria-hidden="true" />
+                使い方・アカウントのご相談
+              </span>
+              <span>
+                <Bug size={16} aria-hidden="true" />
+                不具合・情報の誤りのご報告
+              </span>
+              <span>
+                <Lightbulb size={16} aria-hidden="true" />
+                改善アイデア・ご要望
+              </span>
+            </div>
+          </section>
+          <Link href="/faq" className="contact-faq-card">
+            <div>
+              <p className="eyebrow">BEFORE YOU SEND</p>
+              <h3>よくある質問もご覧ください。</h3>
+              <p>お探しの答えが見つかるかもしれません。</p>
+            </div>
+            <ArrowUpRight size={20} aria-hidden="true" />
+          </Link>
+          <div className="contact-guidance">
+            <ShieldCheck size={18} aria-hidden="true" />
+            <p>
+              お預かりした内容はお問い合わせ対応のために利用します。個別銘柄の売買判断や投資助言のご相談には対応していません。
+            </p>
+          </div>
+        </aside>
+        <ContactForm />
+      </div>
+    </div>
+  );
 }
-

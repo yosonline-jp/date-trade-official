@@ -3,7 +3,7 @@ import nextEnv from "@next/env";
 nextEnv.loadEnvConfig(process.cwd());
 const db = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_ROLE_KEY,
+  process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_ROLE_KEY,
   { auth: { persistSession: false } },
 );
 const tables = {

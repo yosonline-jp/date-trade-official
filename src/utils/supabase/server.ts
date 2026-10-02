@@ -27,17 +27,13 @@ export const createClient = async () => {
 export const createRoleClient = async () => {
   if (typeof window !== "undefined")
     throw new Error("Privileged Supabase client is server-only");
-  if (!process.env.SUPABASE_ROLE_KEY)
-    throw new Error("Botデータ接続が設定されていません。");
-  return createSupabaseClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_ROLE_KEY,
-    {
-      auth: {
-        persistSession: false,
-        autoRefreshToken: false,
-        detectSessionInUrl: false,
-      },
+  const key = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_ROLE_KEY;
+  if (!key) throw new Error("Supabaseのサーバー権限キーが設定されていません。");
+  return createSupabaseClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, key, {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+      detectSessionInUrl: false,
     },
-  );
+  });
 };

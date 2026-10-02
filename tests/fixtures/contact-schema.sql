@@ -1,0 +1,10 @@
+create role anon nologin;
+create role authenticated nologin;
+create role service_role nologin bypassrls;
+create table public.contact(id bigserial primary key,created_at timestamptz default now(),name text,email text,title text,content text);
+alter table public.contact enable row level security;
+grant all on public.contact to anon,authenticated;
+grant usage on sequence public.contact_id_seq to anon,authenticated;
+create policy legacy_contact_read on public.contact for select to public using(true);
+create policy legacy_contact_insert on public.contact for insert to public with check(true);
+insert into public.contact(name,email,title,content) values('Historic','old@example.com','Historic','Existing record');

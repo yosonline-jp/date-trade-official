@@ -32,9 +32,9 @@ const Footer = () => {
 					</p>
 				</div>
 
-				{/* About */}
+				{/* ABOUT */}
 				<div>
-					<div className="mb-4 font-bold uppercase tracking-widest">About</div>
+					<div className="mb-4 font-bold uppercase tracking-widest">ABOUT</div>
 					<nav className="flex flex-col gap-4 text-sm">
 						<div>
 							<Link
