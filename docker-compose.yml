@@ -1,0 +1,24 @@
+﻿name: daytrade
+services:
+  app:
+    build:
+      context: .
+      target: development
+    ports:
+      - "${APP_PORT:-3002}:3000"
+    env_file:
+      - .env
+    environment:
+      WATCHPACK_POLLING: "true"
+      NEXT_TELEMETRY_DISABLED: "1"
+    volumes:
+      - .:/app
+      - dependencies:/app/node_modules
+      - nextcache:/app/.next
+      - devcache:/app/.next-dev
+    restart: unless-stopped
+    command: ["yarn", "dev", "--hostname", "0.0.0.0"]
+volumes:
+  dependencies:
+  nextcache:
+  devcache:

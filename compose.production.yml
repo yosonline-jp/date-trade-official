@@ -1,0 +1,14 @@
+﻿services:
+  production:
+    build:
+      context: .
+      target: production
+      args:
+        NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL}
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+        NEXT_PUBLIC_MAIN_URL: ${NEXT_PUBLIC_MAIN_URL:-http://localhost:3003}
+    ports:
+      - "${PRODUCTION_PORT:-3003}:3000"
+    env_file:
+      - .env
+    restart: unless-stopped
