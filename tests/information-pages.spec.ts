@@ -80,6 +80,7 @@ test("contact validates locally and preserves input after a failed submission", 
     page.getByText("お名前を入力してください。", { exact: true }),
   ).toBeVisible();
   expect(posts).toBe(0);
+  await expect(page.getByLabel("お名前", { exact: true })).toBeFocused();
   await fillContact(page);
   await page
     .getByLabel("メールアドレス（確認）", { exact: true })
@@ -100,6 +101,7 @@ test("contact validates locally and preserves input after a failed submission", 
   await expect(page.getByRole("main").getByRole("alert")).toContainText(
     "入力内容は残っています",
   );
+  await expect(page.getByRole("main").getByRole("alert")).toBeFocused();
   await expect(page.getByLabel("件名", { exact: true })).toHaveValue(
     "画面検証の件名",
   );
@@ -143,9 +145,24 @@ test("contact pending state prevents duplicates and success offers a new form", 
       exact: true,
     }),
   ).toBeVisible();
+  await expect(page.getByRole("main").getByRole("status")).toBeFocused();
   await page
     .getByRole("button", { name: "別のお問い合わせを送る", exact: true })
     .click();
   await expect(page.getByLabel("お名前", { exact: true })).toHaveValue("");
   await expect(page.getByRole("checkbox")).not.toBeChecked();
+  await expect(page.getByLabel("お名前", { exact: true })).toBeFocused();
+  await page.keyboard.press("Tab");
+  await expect(
+    page.getByLabel("メールアドレス", { exact: true }),
+  ).toBeFocused();
+  await page.getByLabel("お問い合わせ内容", { exact: true }).focus();
+  await page.keyboard.press("Tab");
+  await expect(page.getByRole("checkbox")).toBeFocused();
+  await page.keyboard.press("Space");
+  await expect(page.getByRole("checkbox")).toBeChecked();
+  await page.keyboard.press("Tab");
+  await expect(
+    page.getByRole("link", { name: "プライバシーポリシー", exact: true }),
+  ).toBeFocused();
 });

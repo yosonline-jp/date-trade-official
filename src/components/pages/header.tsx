@@ -3,6 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 
 import { cn } from "@/lib/utils";
+import { SHOW_BOT_MONITOR } from "@/lib/features";
 import {
 	NavigationMenu,
 	NavigationMenuContent,
@@ -94,11 +95,13 @@ export function Header({
 							</Link>
 						</NavigationMenuItem>
 
-						<NavigationMenuItem>
-							<Link href="/bot-trades" className={navigationMenuTriggerStyle()}>
-								Botモニター
-							</Link>
-						</NavigationMenuItem>
+						{SHOW_BOT_MONITOR && (
+							<NavigationMenuItem>
+								<Link href="/bot-trades" className={navigationMenuTriggerStyle()}>
+									Botモニター
+								</Link>
+							</NavigationMenuItem>
+						)}
 
 						{/* テクニカル */}
 						<NavigationMenuItem>

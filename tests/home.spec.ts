@@ -48,16 +48,15 @@ test("candlestick period and moving average can be changed", async ({
   await page.getByRole("button", { name: "MA25 ON" }).click();
   await expect(page.getByRole("button", { name: "MA25 OFF" })).toBeVisible();
 });
-test("bot monitor handles invalid dates and an empty dataset", async ({
+test("bot monitor is hidden while unavailable", async ({
   page,
 }) => {
+  await page.goto("/");
+  await expect(page.locator('a[href^="/bot-trades"]')).toHaveCount(0);
+  await expect(page.locator(".strategy-card")).toHaveCount(0);
   await page.goto("/bot-trades?date=invalid");
-  await expect(
-    page.getByRole("heading", { name: "Botモニター." }),
-  ).toBeVisible();
-  await expect(page.locator("main").getByRole("alert")).toContainText(
-    "日付を正しく",
-  );
+  await expect(page.getByText("ご指定のページが見つかりませんでした。")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Botモニター." })).toHaveCount(0);
 });
 test("CMS requires authentication", async ({ page }) => {
   await page.goto("/dashboard/cms");
@@ -68,6 +67,10 @@ test("mobile navigation opens and navigates", async ({ page, isMobile }) => {
   test.skip(!isMobile);
   await page.goto("/");
   await page.getByRole("button", { name: "メニューを開く" }).click();
+  await expect(
+    page.getByRole("navigation", { name: "メインナビゲーション" })
+      .getByRole("link", { name: "Botモニター" }),
+  ).toHaveCount(0);
   await page
     .getByRole("navigation", { name: "メインナビゲーション" })
     .getByRole("link", { name: "日本株を探す" })

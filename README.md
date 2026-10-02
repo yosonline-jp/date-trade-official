@@ -1,6 +1,6 @@
 ﻿# DAYTRADE Workspace
 
-日本株のマーケット情報、株価チャート、取引記録、Bot実績、記事CMSをまとめたNext.jsアプリです。既存Supabaseのテーブルと認証を利用します。
+日本株のマーケット情報、株価チャート、取引記録、記事CMSをまとめたNext.jsアプリです。既存Supabaseのテーブルと認証を利用します。
 
 ## 開発
 
@@ -41,7 +41,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\yarn-docker.ps1 li
 
 ## 構成
 
-- `src/app/(client)`：公開マーケット、銘柄、チャート、記事、Botモニター
+- `src/app/(client)`：公開マーケット、銘柄、チャート、記事
 - `src/app/(dashboard)`：認証必須の取引管理・CMS
 - `src/app/(auth-pages)`：ログイン・登録・パスワード管理
 - `src/app/actions`：認証付きサーバーアクション
@@ -70,11 +70,10 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\yarn-docker.ps1 li
 - 指数：`useful_data` の `id=1`
 - 株価・ローソク足：`stock_charts` の `timestamp` / `indicators.quote`
 - 取引記録：`trade_records`
-- Bot：`bot_performance_snapshots` / `bot_trades`
 
 株価は保存済みデータです。ライブ配信や新たな自動取得ジョブは含みません。データが空の場合は空状態、取得失敗の場合はエラー状態を表示します。架空の株価に置き換える処理は新画面にありません。
 
-Botモニターは従来と同様に公開ページです。サーバー専用の `SUPABASE_ROLE_KEY` を使用し、許可した表示列だけを取得します。最新Botまたは `?bot=...` のBotで履歴と評価額を揃えています。履歴最大500件、評価額最新1000件を表示します。
+Botモニターは準備中のため、サイト全体から一時的に非表示にしています。`/bot-trades` への直接アクセスも404ページを表示し、Botデータは取得しません。実装は保持しており、再公開時は `src/lib/features.ts` の `SHOW_BOT_MONITOR` を `true` に変更してください。
 
 ## 検証
 

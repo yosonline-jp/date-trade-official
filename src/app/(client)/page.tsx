@@ -1,5 +1,5 @@
 ﻿import Link from "next/link";
-import { SHOW_MARKET_NEWS } from "@/lib/features";
+import { SHOW_BOT_MONITOR, SHOW_MARKET_NEWS } from "@/lib/features";
 import {
   ArrowDownRight,
   ArrowUpRight,
@@ -130,65 +130,73 @@ export default async function Home() {
           </Link>
         </section>
       </div>
-      <div
-        className="overview-grid lower-grid"
-        style={SHOW_MARKET_NEWS ? undefined : { gridTemplateColumns: "1fr" }}
-      >
-        {SHOW_MARKET_NEWS && (
-          <section className="terminal-panel">
-            <div className="panel-heading">
-              <div>
-                <p className="eyebrow">LATEST INSIGHTS</p>
-                <h2>マーケットニュース</h2>
+      {(SHOW_MARKET_NEWS || SHOW_BOT_MONITOR) && (
+        <div
+          className="overview-grid lower-grid"
+          style={
+            SHOW_MARKET_NEWS && SHOW_BOT_MONITOR
+              ? undefined
+              : { gridTemplateColumns: "1fr" }
+          }
+        >
+          {SHOW_MARKET_NEWS && (
+            <section className="terminal-panel">
+              <div className="panel-heading">
+                <div>
+                  <p className="eyebrow">LATEST INSIGHTS</p>
+                  <h2>マーケットニュース</h2>
+                </div>
+                <Link href="/news" className="text-link">
+                  すべて見る <ArrowRight size={14} />
+                </Link>
               </div>
-              <Link href="/news" className="text-link">
-                すべて見る <ArrowRight size={14} />
+              <div className="news-list">
+                {market.news.length ? (
+                  market.news.map((item, i) => (
+                    <Link href={`/news/${item.id}`} key={item.id}>
+                      <span className="news-number">0{i + 1}</span>
+                      <div>
+                        <small>
+                          {new Date(item.created_at).toLocaleDateString("ja-JP", {
+                            timeZone: "Asia/Tokyo",
+                          })}{" "}
+                          <span>MARKET</span>
+                        </small>
+                        <h3>{item.header?.title || "マーケットニュース"}</h3>
+                      </div>
+                      <ArrowUpRight size={17} />
+                    </Link>
+                  ))
+                ) : (
+                  <p className="empty-copy">ニュースはまだありません。</p>
+                )}
+              </div>
+            </section>
+          )}
+          {SHOW_BOT_MONITOR && (
+            <section className="strategy-card">
+              <div className="strategy-icon">
+                <Bot size={26} />
+              </div>
+              <p className="eyebrow">SYSTEMATIC TRADING</p>
+              <h2>
+                戦略を、
+                <br />
+                データで確かめる。
+              </h2>
+              <p>
+                Botの運用実績と取引履歴をチェック。
+                <br />
+                感覚だけに頼らない、トレードへ。
+              </p>
+              <Link href="/bot-trades">
+                Botモニターを開く <ArrowUpRight size={18} />
               </Link>
-            </div>
-            <div className="news-list">
-              {market.news.length ? (
-                market.news.map((item, i) => (
-                  <Link href={`/news/${item.id}`} key={item.id}>
-                    <span className="news-number">0{i + 1}</span>
-                    <div>
-                      <small>
-                        {new Date(item.created_at).toLocaleDateString("ja-JP", {
-                          timeZone: "Asia/Tokyo",
-                        })}{" "}
-                        <span>MARKET</span>
-                      </small>
-                      <h3>{item.header?.title || "マーケットニュース"}</h3>
-                    </div>
-                    <ArrowUpRight size={17} />
-                  </Link>
-                ))
-              ) : (
-                <p className="empty-copy">ニュースはまだありません。</p>
-              )}
-            </div>
-          </section>
-        )}
-        <section className="strategy-card">
-          <div className="strategy-icon">
-            <Bot size={26} />
-          </div>
-          <p className="eyebrow">SYSTEMATIC TRADING</p>
-          <h2>
-            戦略を、
-            <br />
-            データで確かめる。
-          </h2>
-          <p>
-            Botの運用実績と取引履歴をチェック。
-            <br />
-            感覚だけに頼らない、トレードへ。
-          </p>
-          <Link href="/bot-trades">
-            Botモニターを開く <ArrowUpRight size={18} />
-          </Link>
-          <ChartCandlestick className="strategy-decoration" size={140} />
-        </section>
-      </div>
+              <ChartCandlestick className="strategy-decoration" size={140} />
+            </section>
+          )}
+        </div>
+      )}
     </div>
   );
 }

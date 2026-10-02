@@ -1,6 +1,7 @@
 "use client";
 
 import { Menu } from "lucide-react";
+import { SHOW_BOT_MONITOR } from "@/lib/features";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -98,13 +99,15 @@ const SheetMenu = ({ isLogin }: { isLogin: boolean }) => {
 							みんなのトレード
 						</Button>
 
-						<Button
-							className="w-full p-0 font-bold"
-							onClick={() => goLink("/bot-trades")}
-							variant="link"
-						>
-							Botモニター
-						</Button>
+						{SHOW_BOT_MONITOR && (
+							<Button
+								className="w-full p-0 font-bold"
+								onClick={() => goLink("/bot-trades")}
+								variant="link"
+							>
+								Botモニター
+							</Button>
+						)}
 
 						<Button
 							className="w-full p-0 font-bold"

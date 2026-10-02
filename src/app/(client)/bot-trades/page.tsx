@@ -1,9 +1,13 @@
 ﻿import Link from "next/link";
 import { ArrowUpRight, Bot } from "lucide-react";
+import { notFound } from "next/navigation";
+import { SHOW_BOT_MONITOR } from "@/lib/features";
 import { createRoleClient } from "@/utils/supabase/server";
 import { PriceChart } from "@/components/workspace/price-chart";
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Botモニター | デイトレード.net" };
+export const metadata = SHOW_BOT_MONITOR
+  ? { title: "Botモニター | デイトレード.net" }
+  : {};
 const number = (v: unknown) =>
   v === null || v === undefined
     ? "—"
@@ -23,6 +27,7 @@ export default async function BotTradesPage({
 }: {
   searchParams: Promise<{ date?: string; more?: string; bot?: string }>;
 }) {
+  if (!SHOW_BOT_MONITOR) notFound();
   const params = await searchParams;
   const requested = Number(params.more ?? 20);
   const limit = Number.isFinite(requested)

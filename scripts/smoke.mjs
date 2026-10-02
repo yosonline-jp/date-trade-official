@@ -1,5 +1,5 @@
 ﻿const base=process.env.SMOKE_BASE_URL||'http://production:3000';
-const checks=[['/',200],['/stocks?q=7203',200],['/chart?code=7203',200],['/bot-trades',200],['/news',200],['/technicals',200],['/sign-in',200],['/dashboard/cms',307],['/api/stocks?search=7203',200],['/api/resend',410]];
+const checks=[['/',200],['/stocks?q=7203',200],['/chart?code=7203',200],['/bot-trades',404],['/news',200],['/technicals',200],['/sign-in',200],['/dashboard/cms',307],['/api/stocks?search=7203',200],['/api/resend',410]];
 let failed=false;
 for(const [path,expected] of checks){
  try {

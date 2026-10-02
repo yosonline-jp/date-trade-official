@@ -1,6 +1,6 @@
 ﻿"use client";
 import Link from "next/link";
-import { SHOW_MARKET_NEWS } from "@/lib/features";
+import { SHOW_BOT_MONITOR, SHOW_MARKET_NEWS } from "@/lib/features";
 import { usePathname } from "next/navigation";
 import {
   Activity,
@@ -49,7 +49,9 @@ const marketLinks = [
   { href: "/stocks", label: "日本株を探す", icon: Search },
   { href: "/chart", label: "チャート", icon: ChartCandlestick },
   { href: "/watchlist", label: "ウォッチリスト", icon: Star },
-  { href: "/bot-trades", label: "Botモニター", icon: Bot },
+  ...(SHOW_BOT_MONITOR
+    ? [{ href: "/bot-trades", label: "Botモニター", icon: Bot }]
+    : []),
   ...(SHOW_MARKET_NEWS
     ? [{ href: "/news", label: "マーケットニュース", icon: Newspaper }]
     : []),

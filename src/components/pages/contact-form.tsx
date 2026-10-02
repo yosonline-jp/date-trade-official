@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { ArrowRight, Check, CheckCircle2, Loader2, Send } from "lucide-react";
 import { contactResolver, type ContactInput } from "@/validations/contact";
@@ -23,7 +23,8 @@ export default function ContactForm() {
     [error, setError] = useState<string | null>(null);
   const inFlight = useRef(false),
     successRef = useRef<HTMLDivElement>(null),
-    errorRef = useRef<HTMLParagraphElement>(null);
+    errorRef = useRef<HTMLParagraphElement>(null),
+    wasSent = useRef(false);
   const form = useForm<ContactInput>({
     resolver: contactResolver,
     defaultValues: {
@@ -36,6 +37,17 @@ export default function ContactForm() {
       website: "",
     },
   });
+  useEffect(() => {
+    if (sent) {
+      successRef.current?.focus();
+    } else if (wasSent.current) {
+      form.setFocus("name");
+    }
+    wasSent.current = sent;
+  }, [sent, form]);
+  useEffect(() => {
+    if (error) errorRef.current?.focus();
+  }, [error]);
   const content = form.watch("content");
   const onSubmit = async (input: ContactInput) => {
     if (inFlight.current) return;
@@ -47,16 +59,13 @@ export default function ContactForm() {
       if (result.ok) {
         form.reset();
         setSent(true);
-        requestAnimationFrame(() => successRef.current?.focus());
       } else {
         setError(result.error);
-        requestAnimationFrame(() => errorRef.current?.focus());
       }
     } catch {
       setError(
         "送信結果を確認できませんでした。入力内容は残っています。通信状況を確認してから再度お試しください。",
       );
-      requestAnimationFrame(() => errorRef.current?.focus());
     } finally {
       inFlight.current = false;
       setPending(false);
