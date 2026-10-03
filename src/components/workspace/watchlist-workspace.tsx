@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
-import { createClient } from "@/utils/supabase/server";
+import { createClient, getRequestUser } from "@/utils/supabase/server";
 import { ensureFreshStocks } from "@/lib/market/refresh";
+import { watchlistSeries } from "@/lib/market/watchlist-series";
 import WatchlistTable from "@/components/watchlist-list";
 import type { CandleRaw } from "@/components/mini-candle-chart";
 
@@ -9,7 +10,7 @@ export async function WatchlistWorkspace() {
   const db = await createClient();
   const {
     data: { user },
-  } = await db.auth.getUser();
+  } = await getRequestUser();
   if (!user)
     return (
       <div className="page-heading">
@@ -23,15 +24,18 @@ export async function WatchlistWorkspace() {
         </Link>
       </div>
     );
-  const { data: watchlist, error } = await db
-    .from("watchlist")
-    .select("id,stock_code,stock_name,created_at")
-    .eq("user_id", user.id)
-    .order("created_at", { ascending: false });
-  const notesResult = await db
-    .from("watchlist_notes")
-    .select("stock_code,category,note,target_price")
-    .eq("user_id", user.id);
+  const [watchlistResult, notesResult] = await Promise.all([
+    db
+      .from("watchlist")
+      .select("id,stock_code,stock_name,created_at")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false }),
+    db
+      .from("watchlist_notes")
+      .select("stock_code,category,note,target_price")
+      .eq("user_id", user.id),
+  ]);
+  const { data: watchlist, error } = watchlistResult;
   const codes = watchlist?.map((item) => item.stock_code) ?? [];
   const refreshFailed = await ensureFreshStocks(codes);
   const [chartsResult, pricesResult] = await Promise.all([
@@ -48,25 +52,8 @@ export async function WatchlistWorkspace() {
       : Promise.resolve({ data: [], error: null }),
   ]);
   const candlesList: Record<string, CandleRaw[]> = {};
-  for (const row of chartsResult.data ?? []) {
-    const quote = row.data?.indicators?.quote?.[0];
-    candlesList[row.code] = (row.data?.timestamp ?? []).flatMap(
-      (ts: number, i: number) => {
-        const candle = {
-          ts,
-          open: quote?.open?.[i],
-          high: quote?.high?.[i],
-          low: quote?.low?.[i],
-          close: quote?.close?.[i],
-        };
-        return Object.values(candle).every(
-          (n) => typeof n === "number" && Number.isFinite(n),
-        )
-          ? [candle as CandleRaw]
-          : [];
-      },
-    );
-  }
+  for (const row of chartsResult.data ?? [])
+    candlesList[row.code] = watchlistSeries(row.data);
   return (
     <div>
       <div className="page-heading">

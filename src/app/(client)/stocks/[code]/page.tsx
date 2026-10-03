@@ -1,11 +1,10 @@
-import { createClient } from "@/utils/supabase/server";
+import { getStockDetail } from "@/lib/market/stock-detail";
 import WatchlistButton from "@/components/watchlist-btn";
 import Link from "next/link";
 import { ArrowLeft, ArrowUpRight, TrendingUp, TrendingDown, BarChart3, MessageSquare, Clock3 } from "lucide-react";
 import CandleChart, { CandleRaw } from "@/components/stock-candle-chart";
 import VolumeChart, { VolumeChartData } from "@/components/volume-chart";
 import { CommentForm, CommentList } from "@/components/pages/stock-comments";
-import { ensureFreshStock } from "@/lib/market/refresh";
 import StockCloseAnalysisPanel from "@/components/stock-close-analysis";
 
 type StockPageParams = {
@@ -16,47 +15,13 @@ type StockPageParams = {
 };
 
 export default async function StockDetailPage({ params }: StockPageParams) {
-	const supabase = await createClient();
 	// `params` may be a Promise in Next's generated types; awaiting is safe for both Promise and plain object
 	const resolvedParams = (await params) as Record<string, string>;
 	const { code } = resolvedParams;
-	await ensureFreshStock(code).catch(() => undefined);
+	const { user, stock, stockError, price, priceError, chartData, chartError } =
+		await getStockDetail(code);
 
-	// 🔹 ユーザー情報を取得
-	const { data: user } = await supabase.auth.getUser();
-
-	// 🔹 銘柄の基本情報を取得
-	const { data: stock, error: stockError } = await supabase
-		.from("stocks")
-		.select(
-			`*, comments: stock_comments(
-			 	id,
-				user_id: users(id, account, nickname, avatar),
-				comment,
-				created_at
-			)`
-		)
-		.eq("code", code)
-		.single();
-
-	// 🔹 最新の株価情報を取得（updated_at の最新レコード）
-	const { data: price, error: priceError } = await supabase
-		.from("daily_prices")
-		.select("*")
-		.eq("code", code)
-		.order("updated_at", { ascending: false })
-		.limit(1)
-		.single();
-
-	// チャートのデータを取得する
-	const { data: chartData, error: chartError } = await supabase
-		.from("stock_charts")
-		.select("*")
-		.eq("code", code)
-		.order("id", { ascending: true })
-		.single();
-
-	if (stockError || priceError) {
+	if (stockError || priceError || !stock || !price) {
 		return (
 			<p className="text-center text-red-500">銘柄情報が見つかりません。</p>
 		);
@@ -65,7 +30,7 @@ export default async function StockDetailPage({ params }: StockPageParams) {
 	const comments = stock.comments || [];
 	let candles: CandleRaw[] = [];
 	const volumesData: VolumeChartData = { timestamps: [], volumes: [] };
-	if (!chartError) {
+	if (!chartError && chartData) {
 		const timestamps = chartData.data.timestamp;
 		const indicators = chartData.data.indicators;
 		candles = timestamps.map((ts: number, i: number) => ({

@@ -2,6 +2,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
+import { cache } from "react";
 export const createClient = async () => {
   const cookieStore = await cookies();
   return createServerClient(
@@ -23,6 +24,11 @@ export const createClient = async () => {
     },
   );
 };
+/** Share verified auth only within one Server Component render request. */
+export const getRequestUser = cache(async () => {
+  const db = await createClient();
+  return db.auth.getUser();
+});
 /** Server-only privileged client. Never forwards browser authentication cookies. */
 export const createRoleClient = async () => {
   if (typeof window !== "undefined")

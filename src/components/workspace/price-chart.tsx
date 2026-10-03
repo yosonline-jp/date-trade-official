@@ -19,13 +19,17 @@ export function PriceChart({
 }) {
   const [range, setRange] = useState(90);
   const gradient = useId().replace(/:/g, "");
+  const sorted = useMemo(
+    () =>
+      points
+        .filter((p) => Number.isFinite(p.close) && Number.isFinite(p.time))
+        .sort((a, b) => a.time - b.time),
+    [points],
+  );
   const data = useMemo(() => {
-    const sorted = points
-      .filter((p) => Number.isFinite(p.close) && Number.isFinite(p.time))
-      .sort((a, b) => a.time - b.time);
     const last = sorted.at(-1)?.time ?? 0;
     return sorted.filter((p) => range === 0 || p.time >= last - range * 86400);
-  }, [points, range]);
+  }, [sorted, range]);
   const positive =
     data.length < 2 || data[data.length - 1].close >= data[0].close;
   const color = positive ? "#5ce0bd" : "#fb8394";

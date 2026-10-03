@@ -1,5 +1,5 @@
 ﻿import { WorkspaceShell } from "@/components/workspace/shell";
-import { createClient } from "@/utils/supabase/server";
+import { createClient, getRequestUser } from "@/utils/supabase/server";
 export default async function ClientLayout({
   children,
 }: {
@@ -8,7 +8,7 @@ export default async function ClientLayout({
   const db = await createClient();
   const {
     data: { user },
-  } = await db.auth.getUser();
+  } = await getRequestUser();
   const profile = user
     ? (
         await db

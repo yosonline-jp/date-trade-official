@@ -77,11 +77,13 @@ export function latestCandle(chart: YahooChart) {
   throw new Error("有効な四本値がありません。");
 }
 
+const jstDayFormatter = new Intl.DateTimeFormat("en-CA", {
+  timeZone: "Asia/Tokyo",
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+});
+
 export function jstDay(value: string | number | Date = new Date()) {
-  return new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Asia/Tokyo",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).format(new Date(value));
+  return jstDayFormatter.format(new Date(value));
 }

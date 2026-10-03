@@ -8,6 +8,7 @@ export default [
   {
     ignores: [
       ".next/**",
+      ".next-dev/**",
       "node_modules/**",
       "next-env.d.ts",
       "playwright-report/**",

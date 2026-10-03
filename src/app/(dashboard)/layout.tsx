@@ -1,5 +1,5 @@
 ﻿import { WorkspaceShell } from "@/components/workspace/shell";
-import { createClient } from "@/utils/supabase/server";
+import { createClient, getRequestUser } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 export const metadata = { title: "マイワークスペース | デイトレード.net" };
 export default async function DashboardLayout({
@@ -10,7 +10,7 @@ export default async function DashboardLayout({
   const db = await createClient();
   const {
     data: { user },
-  } = await db.auth.getUser();
+  } = await getRequestUser();
   if (!user) redirect("/sign-in");
   const { data: profile } = await db
     .from("users")

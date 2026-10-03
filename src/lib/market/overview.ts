@@ -2,6 +2,7 @@
 import type { PricePoint } from "@/components/workspace/price-chart";
 import { ensureFreshIndices } from "./indices";
 import { ensureFreshStock } from "./refresh";
+import { SHOW_MARKET_NEWS } from "@/lib/features";
 export type MarketIndex = {
   name: string;
   price: string;
@@ -22,11 +23,13 @@ export async function getMarketOverview() {
       .eq("code", "7203")
       .limit(1)
       .maybeSingle(),
-    db
-      .from("news")
-      .select("id, header, created_at")
-      .order("created_at", { ascending: false })
-      .limit(4),
+    SHOW_MARKET_NEWS
+      ? db
+          .from("news")
+          .select("id, header, created_at")
+          .order("created_at", { ascending: false })
+          .limit(4)
+      : Promise.resolve({ data: [], error: null }),
     db
       .from("stocks")
       .select("code, name, market")

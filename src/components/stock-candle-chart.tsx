@@ -13,6 +13,18 @@ interface CandleChartProps {
   width?: number | `${number}%`;
   height?: number;
 }
+const W = 1000,
+  H = 400,
+  left = 12,
+  right = 85,
+  top = 18,
+  bottom = 32;
+const dateFormatter = new Intl.DateTimeFormat("ja-JP", {
+  month: "2-digit",
+  day: "2-digit",
+  timeZone: "Asia/Tokyo",
+});
+const date = (ts: number) => dateFormatter.format(new Date(ts * 1000));
 export default function CandleChart({
   data = [],
   height = 400,
@@ -29,47 +41,121 @@ export default function CandleChart({
         .sort((a, b) => a.ts - b.ts),
     [data],
   );
-  const filtered = period ? values.slice(-period) : values;
-  if (!filtered.length)
+  const averages = useMemo(
+    () =>
+      values.map((_, i) =>
+        i < 24
+          ? null
+          : values.slice(i - 24, i + 1).reduce((sum, c) => sum + c.close, 0) /
+            25,
+      ),
+    [values],
+  );
+  const chart = useMemo(() => {
+    const filtered = period ? values.slice(-period) : values;
+    if (!filtered.length) return null;
+    const low = Math.min(...filtered.map((p) => p.low));
+    const high = Math.max(...filtered.map((p) => p.high));
+    const span = Math.max(high - low, 1);
+    const min = low - span * 0.08,
+      max = high + span * 0.08;
+    const plotW = W - left - right,
+      plotH = H - top - bottom;
+    const y = (v: number) => top + ((max - v) / (max - min)) * plotH;
+    const step = plotW / filtered.length;
+    const x = (i: number) => left + (i + 0.5) * step;
+    const average = averages.slice(-filtered.length);
+    const averagePath = average
+      .map((v, i) =>
+        v === null
+          ? ""
+          : `${i === 0 || average[i - 1] === null ? "M" : "L"}${x(i)},${y(v)}`,
+      )
+      .join(" ");
+    const grid = (
+      <>
+        {Array.from({ length: 6 }, (_, i) => {
+          const value = min + ((max - min) * i) / 5;
+          return (
+            <g key={i}>
+              <line
+                x1={left}
+                x2={W - right}
+                y1={y(value)}
+                y2={y(value)}
+                stroke="#27374b"
+                strokeDasharray="3 6"
+              />
+              <text
+                x={W - right + 12}
+                y={y(value) + 4}
+                fill="#7f94ad"
+                fontSize={12}
+              >
+                {value.toLocaleString("ja-JP", { maximumFractionDigits: 0 })}
+              </text>
+            </g>
+          );
+        })}
+      </>
+    );
+    const candles = (
+      <>
+        {filtered.map((p, i) => {
+          const color = p.close >= p.open ? "#5cdbb5" : "#ee8798";
+          return (
+            <g key={`${p.ts}-${i}`}>
+              <title>
+                {`${date(p.ts)} 始値 ${p.open} 高値 ${p.high} 安値 ${p.low} 終値 ${p.close}`}
+              </title>
+              <line
+                x1={x(i)}
+                x2={x(i)}
+                y1={y(p.high)}
+                y2={y(p.low)}
+                stroke={color}
+              />
+              <rect
+                x={x(i) - Math.max(step * 0.6, 1) / 2}
+                y={Math.min(y(p.open), y(p.close))}
+                width={Math.max(step * 0.6, 1)}
+                height={Math.max(Math.abs(y(p.open) - y(p.close)), 1)}
+                fill={color}
+              />
+            </g>
+          );
+        })}
+      </>
+    );
+    const dates = (
+      <>
+        {[0, 0.25, 0.5, 0.75, 1].map((v, i) => {
+          const idx = Math.min(
+            filtered.length - 1,
+            Math.floor((filtered.length - 1) * v),
+          );
+          return (
+            <text
+              key={i}
+              x={x(idx)}
+              y={H - 8}
+              fill="#7f94ad"
+              fontSize={12}
+              textAnchor={i === 0 ? "start" : i === 4 ? "end" : "middle"}
+            >
+              {date(filtered[idx].ts)}
+            </text>
+          );
+        })}
+      </>
+    );
+    return { filtered, step, x, averagePath, grid, candles, dates };
+  }, [values, period, averages]);
+  if (!chart)
     return <div className="chart-empty">チャートデータはありません。</div>;
+  const { filtered, step, x, averagePath, grid, candles, dates } = chart;
   const selected =
     filtered[Math.min(hover ?? filtered.length - 1, filtered.length - 1)];
-  const low = Math.min(...filtered.map((p) => p.low));
-  const high = Math.max(...filtered.map((p) => p.high));
-  const span = Math.max(high - low, 1);
-  const min = low - span * 0.08,
-    max = high + span * 0.08;
-  const W = 1000,
-    H = 400,
-    left = 12,
-    right = 85,
-    top = 18,
-    bottom = 32;
-  const plotW = W - left - right,
-    plotH = H - top - bottom;
-  const y = (v: number) => top + ((max - v) / (max - min)) * plotH;
-  const step = plotW / filtered.length;
-  const x = (i: number) => left + (i + 0.5) * step;
-  const average = values
-    .map((_, i) =>
-      i < 24
-        ? null
-        : values.slice(i - 24, i + 1).reduce((sum, c) => sum + c.close, 0) / 25,
-    )
-    .slice(-filtered.length);
-  const averagePath = average
-    .map((v, i) =>
-      v === null
-        ? ""
-        : `${i === 0 || average[i - 1] === null ? "M" : "L"}${x(i)},${y(v)}`,
-    )
-    .join(" ");
-  const date = (ts: number) =>
-    new Date(ts * 1000).toLocaleDateString("ja-JP", {
-      month: "2-digit",
-      day: "2-digit",
-      timeZone: "Asia/Tokyo",
-    });
   return (
     <section className="terminal-panel">
       <div className="chart-toolbar">
@@ -137,53 +223,8 @@ export default function CandleChart({
         }}
         onPointerLeave={() => setHover(null)}
       >
-        {Array.from({ length: 6 }, (_, i) => {
-          const value = min + ((max - min) * i) / 5;
-          return (
-            <g key={i}>
-              <line
-                x1={left}
-                x2={W - right}
-                y1={y(value)}
-                y2={y(value)}
-                stroke="#27374b"
-                strokeDasharray="3 6"
-              />
-              <text
-                x={W - right + 12}
-                y={y(value) + 4}
-                fill="#7f94ad"
-                fontSize={12}
-              >
-                {value.toLocaleString("ja-JP", { maximumFractionDigits: 0 })}
-              </text>
-            </g>
-          );
-        })}
-        {filtered.map((p, i) => {
-          const color = p.close >= p.open ? "#5cdbb5" : "#ee8798";
-          return (
-            <g key={`${p.ts}-${i}`}>
-              <title>
-                {`${date(p.ts)} 始値 ${p.open} 高値 ${p.high} 安値 ${p.low} 終値 ${p.close}`}
-              </title>
-              <line
-                x1={x(i)}
-                x2={x(i)}
-                y1={y(p.high)}
-                y2={y(p.low)}
-                stroke={color}
-              />
-              <rect
-                x={x(i) - Math.max(step * 0.6, 1) / 2}
-                y={Math.min(y(p.open), y(p.close))}
-                width={Math.max(step * 0.6, 1)}
-                height={Math.max(Math.abs(y(p.open) - y(p.close)), 1)}
-                fill={color}
-              />
-            </g>
-          );
-        })}
+        {grid}
+        {candles}
         {showAverage && (
           <path
             d={averagePath}
@@ -192,24 +233,7 @@ export default function CandleChart({
             strokeWidth={1.5}
           />
         )}
-        {[0, 0.25, 0.5, 0.75, 1].map((v, i) => {
-          const idx = Math.min(
-            filtered.length - 1,
-            Math.floor((filtered.length - 1) * v),
-          );
-          return (
-            <text
-              key={i}
-              x={x(idx)}
-              y={H - 8}
-              fill="#7f94ad"
-              fontSize={12}
-              textAnchor={i === 0 ? "start" : i === 4 ? "end" : "middle"}
-            >
-              {date(filtered[idx].ts)}
-            </text>
-          );
-        })}
+        {dates}
         {hover !== null && (
           <line
             x1={x(hover)}

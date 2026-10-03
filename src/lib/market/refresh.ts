@@ -96,9 +96,59 @@ async function refreshStock(code: string) {
 
 export async function ensureFreshStocks(codes: string[]) {
   const unique = [...new Set(codes.filter((code) => validCode.test(code)))];
+  if (!unique.length) return [];
+  const fresh = new Set<string>();
+  try {
+    const db = await createRoleClient();
+    const today = jstDay();
+    // Read metadata in bulk. The first row for each code matches the single-symbol
+    // queries above; absent/truncated rows fall back to that path before writing.
+    for (let i = 0; i < unique.length; i += 100) {
+      const codes = unique.slice(i, i + 100);
+      const [charts, prices, stocks] = await Promise.all([
+        db
+          .from("stock_charts")
+          .select("code,fetched_at")
+          .in("code", codes)
+          .order("id"),
+        db
+          .from("daily_prices")
+          .select("code,updated_at")
+          .in("code", codes)
+          .order("updated_at", { ascending: false }),
+        db.from("stocks").select("code,market").in("code", codes),
+      ]);
+      if (charts.error || prices.error || stocks.error)
+        throw new Error("株価の更新日を確認できませんでした。");
+      const chartDates = new Map<string, string | null>();
+      const priceDates = new Map<string, string | null>();
+      for (const row of charts.data ?? [])
+        if (!chartDates.has(row.code)) chartDates.set(row.code, row.fetched_at);
+      for (const row of prices.data ?? [])
+        if (!priceDates.has(row.code)) priceDates.set(row.code, row.updated_at);
+      for (const stock of stocks.data ?? []) {
+        const chartDate = chartDates.get(stock.code);
+        const priceDate = priceDates.get(stock.code);
+        if (
+          stock.market === "上場廃止" ||
+          (chartDate &&
+            priceDate &&
+            jstDay(chartDate) === today &&
+            jstDay(priceDate) === today)
+        )
+          fresh.add(stock.code);
+      }
+    }
+  } catch {
+    // A failed bulk check must not prevent individual refreshes or hide failures.
+    fresh.clear();
+  }
+  const remaining = unique.filter(
+    (code) => !fresh.has(code) || pending.has(code),
+  );
   const failed: string[] = [];
-  for (let i = 0; i < unique.length; i += 4) {
-    const batch = unique.slice(i, i + 4);
+  for (let i = 0; i < remaining.length; i += 4) {
+    const batch = remaining.slice(i, i + 4);
     const results = await Promise.allSettled(batch.map(ensureFreshStock));
     results.forEach((result, index) => {
       if (result.status === "rejected") failed.push(batch[index]);
