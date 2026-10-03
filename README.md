@@ -77,6 +77,8 @@ Botモニターは準備中のため、サイト全体から一時的に非表�
 
 ## 検証
 
+銘柄詳細ページでは「終値を分析」から、StockAnalysisの始値基準の終値予測を実行できます。[計算方法と検証](docs/close-analysis.md)を参照してください。
+
 ```sh
 docker compose exec app yarn typecheck
 docker compose exec app yarn lint

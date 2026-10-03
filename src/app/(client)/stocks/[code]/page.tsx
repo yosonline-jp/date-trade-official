@@ -6,6 +6,7 @@ import CandleChart, { CandleRaw } from "@/components/stock-candle-chart";
 import VolumeChart, { VolumeChartData } from "@/components/volume-chart";
 import { CommentForm, CommentList } from "@/components/pages/stock-comments";
 import { ensureFreshStock } from "@/lib/market/refresh";
+import StockCloseAnalysisPanel from "@/components/stock-close-analysis";
 
 type StockPageParams = {
 	// Match Next's generated PageProps where `params` is a Promise-wrapped SegmentParams
@@ -132,6 +133,7 @@ export default async function StockDetailPage({ params }: StockPageParams) {
         </div>
         <dl className="stock-quote-stats">{stats.map(([label, value, unit]) => <div key={label}><dt>{label}</dt><dd>{value}<small>{value !== "—" && unit}</small></dd></div>)}</dl>
       </section>
+      <StockCloseAnalysisPanel key={stock.code} stockCode={stock.code} />
       <div className="stock-detail-grid">
         <div className="stock-chart-column">
           <div className="stock-section-heading"><h2><BarChart3 size={18} />株価チャート</h2><span>日足 / JPY</span></div>

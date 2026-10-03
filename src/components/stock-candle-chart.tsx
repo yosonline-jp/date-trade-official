@@ -165,8 +165,7 @@ export default function CandleChart({
           return (
             <g key={`${p.ts}-${i}`}>
               <title>
-                {date(p.ts)} 始値 {p.open} 高値 {p.high} 安値 {p.low} 終値{" "}
-                {p.close}
+                {`${date(p.ts)} 始値 ${p.open} 高値 ${p.high} 安値 ${p.low} 終値 ${p.close}`}
               </title>
               <line
                 x1={x(i)}

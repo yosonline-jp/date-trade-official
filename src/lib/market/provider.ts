@@ -4,6 +4,7 @@ export type YahooChart = {
   meta: Record<string, unknown>;
   timestamp: number[];
   indicators: {
+    adjclose?: Array<{ adjclose: Array<number | null> }>;
     quote: Array<{
       open: Array<number | null>;
       high: Array<number | null>;
@@ -14,8 +15,11 @@ export type YahooChart = {
   };
 };
 
-export async function fetchYahooChart(symbol: string): Promise<YahooChart> {
-  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?range=1y&interval=1d`;
+export async function fetchYahooChart(
+  symbol: string,
+  range: "1mo" | "3mo" | "1y" = "1y",
+): Promise<YahooChart> {
+  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?range=${range}&interval=1d&includeAdjustedClose=true`;
   const response = await fetch(url, {
     cache: "no-store",
     headers: {
@@ -33,11 +37,12 @@ export async function fetchYahooChart(symbol: string): Promise<YahooChart> {
     !result ||
     !Array.isArray(result.timestamp) ||
     !q ||
-    result.timestamp.length < 2 ||
+    result.timestamp.length < (range === "1y" ? 2 : 1) ||
     !result.timestamp.some((_, i) =>
-      [q.open?.[i], q.high?.[i], q.low?.[i], q.close?.[i]].every(
-        (n) => typeof n === "number" && Number.isFinite(n),
-      ),
+      (range === "1y"
+        ? [q.open?.[i], q.high?.[i], q.low?.[i], q.close?.[i]]
+        : [q.high?.[i], q.low?.[i], q.close?.[i]]
+      ).every((n) => typeof n === "number" && Number.isFinite(n)),
     )
   ) {
     throw new Error("株価配信元のデータ形式が想定外です。");
