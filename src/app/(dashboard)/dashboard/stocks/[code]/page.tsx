@@ -127,6 +127,7 @@ export default async function StockDetailPage({ params }: StockPageParams) {
 				</p>
 			)}
 
+			<Link className="terminal-button secondary mb-5" href={`/stock-analysis?code=${stock.code}`}>マルチタイムフレーム分析</Link>
 			<StockCloseAnalysisPanel key={stock.code} stockCode={stock.code} />
 			{/* 📈 チャート */}
 			{candles.length > 0 ? (

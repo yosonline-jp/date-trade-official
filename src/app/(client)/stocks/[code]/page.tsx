@@ -98,6 +98,7 @@ export default async function StockDetailPage({ params }: StockPageParams) {
         </div>
         <dl className="stock-quote-stats">{stats.map(([label, value, unit]) => <div key={label}><dt>{label}</dt><dd>{value}<small>{value !== "—" && unit}</small></dd></div>)}</dl>
       </section>
+      <Link className="terminal-button secondary mb-5" href={`/stock-analysis?code=${stock.code}`}>マルチタイムフレーム分析 <ArrowUpRight size={15} /></Link>
       <StockCloseAnalysisPanel key={stock.code} stockCode={stock.code} />
       <div className="stock-detail-grid">
         <div className="stock-chart-column">

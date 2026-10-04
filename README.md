@@ -81,6 +81,8 @@ Botモニターは準備中のため、サイト全体から一時的に非表�
 
 表示デザインを保ったデータ取得・チャート処理の改善と検証結果は[パフォーマンス改善](docs/performance.md)にまとめています。
 
+`/stock-analysis`では、日本株の検索・選択後に1分・5分・15分足のデイトレード分析を実行できます。価格帯、利確・損切り、RCI到達率、時間足別指標とチャートを表示します。[データ取得・分析方法・制約](docs/stock-analysis.md)を参照してください。
+
 ```sh
 docker compose exec app yarn typecheck
 docker compose exec app yarn lint

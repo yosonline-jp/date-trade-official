@@ -48,6 +48,7 @@ const marketLinks = [
   { href: "/", label: "マーケット概要", icon: LayoutDashboard },
   { href: "/stocks", label: "日本株を探す", icon: Search },
   { href: "/chart", label: "チャート", icon: ChartCandlestick },
+  { href: "/stock-analysis", label: "デイトレード分析", icon: Activity },
   { href: "/watchlist", label: "ウォッチリスト", icon: Star },
   ...(SHOW_BOT_MONITOR
     ? [{ href: "/bot-trades", label: "Botモニター", icon: Bot }]
