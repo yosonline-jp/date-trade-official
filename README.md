@@ -83,6 +83,8 @@ Botモニターは準備中のため、サイト全体から一時的に非表�
 
 `/stock-analysis`では、日本株の検索・選択後に1分・5分・15分足のデイトレード分析を実行できます。価格帯、利確・損切り、RCI到達率、時間足別指標とチャートを表示します。[データ取得・分析方法・制約](docs/stock-analysis.md)を参照してください。
 
+銘柄詳細の「デイトレード指標」では、RSI・RCI・MACD・移動平均・ボリンジャーバンド・ADX/DMI・ATR・MFIなどを確認できます。日足は保存済みデータから表示し、1分・5分・15分足へ切り替えると分足を取得します。[指標一覧・計算と検証](docs/stock-technicals.md)を参照してください。
+
 ```sh
 docker compose exec app yarn typecheck
 docker compose exec app yarn lint

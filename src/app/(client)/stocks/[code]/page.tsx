@@ -6,6 +6,7 @@ import CandleChart, { CandleRaw } from "@/components/stock-candle-chart";
 import VolumeChart, { VolumeChartData } from "@/components/volume-chart";
 import { CommentForm, CommentList } from "@/components/pages/stock-comments";
 import StockCloseAnalysisPanel from "@/components/stock-close-analysis";
+import StockTechnicalPanel from "@/components/stock-technical-panel";
 
 type StockPageParams = {
 	// Match Next's generated PageProps where `params` is a Promise-wrapped SegmentParams
@@ -113,6 +114,7 @@ export default async function StockDetailPage({ params }: StockPageParams) {
           <section className="terminal-panel stock-external"><p className="eyebrow">RESEARCH</p><h2>銘柄をもっと調べる</h2>{[["ミンカブ", `https://minkabu.jp/stock/${stock.code}`], ["Yahoo!ファイナンス", `https://finance.yahoo.co.jp/quote/${stock.code}.T`], ["Googleファイナンス", `https://www.google.com/finance/quote/${stock.code}:TYO`]].map(([label, href]) => <Link key={label} href={href} target="_blank" rel="noopener noreferrer">{label}<ArrowUpRight size={15} /></Link>)}</section>
         </aside>
       </div>
+      <StockTechnicalPanel key={`technicals-${stock.code}`} stockCode={stock.code} dailyCandles={candles} dailyVolumes={volumesData} />
       <section className="terminal-panel stock-discussion"><div className="stock-section-heading"><h2><MessageSquare size={18} />銘柄コメント</h2><span>{comments.length} 件</span></div><CommentForm stockCode={stock.code} /><CommentList comments={comments} user={user?.user} /></section>
     </div>
   );

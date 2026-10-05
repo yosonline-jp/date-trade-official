@@ -1,0 +1,255 @@
+.panel {
+  margin-top: 28px;
+  margin-bottom: 28px;
+  padding: 24px;
+}
+.heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+}
+.heading h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  font-size: 18px;
+  font-weight: 600;
+}
+.heading h2 svg {
+  color: #7db7b0;
+}
+.heading button {
+  flex-shrink: 0;
+}
+.heading button:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+.note,
+.footnote {
+  color: #8da1b6;
+  font-size: 11px;
+  line-height: 1.8;
+  margin-top: 10px;
+}
+.toolbar {
+  margin: 22px 0 16px;
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.tabs button {
+  padding: 9px 16px;
+  border: 1px solid #304155;
+  border-radius: 6px;
+  color: #9db0c6;
+  font-size: 12px;
+}
+.tabs button[aria-pressed="true"] {
+  background: #15352f;
+  color: #65dfbd;
+  border-color: #65dfbd;
+}
+.tabs button:focus-visible,
+.chartSelect select:focus-visible {
+  outline: 2px solid #65dfbd;
+  outline-offset: 3px;
+}
+.source {
+  font-size: 11px;
+  color: #8198af;
+  margin-left: auto;
+}
+.loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 20px 0;
+  font-size: 13px;
+  color: #9db0c6;
+}
+.error {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid #594a3a;
+  border-radius: 8px;
+  color: #dcc496;
+  font-size: 13px;
+}
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 20px;
+  color: #8da1b6;
+  font-size: 11px;
+  padding: 14px 0;
+  border-top: 1px solid #263243;
+}
+.meta strong {
+  color: #d5e0ee;
+  font-weight: 500;
+}
+.marketState {
+  color: #e1b767;
+}
+.summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 22px;
+}
+.summary > div {
+  min-width: 0;
+  padding: 16px;
+  background: #142130;
+  border: 1px solid #2b3c4c;
+  border-radius: 8px;
+}
+.summary span,
+.summary small {
+  display: block;
+  font-size: 11px;
+  color: #8da1b6;
+}
+.summary strong {
+  display: block;
+  margin: 8px 0;
+  font-size: 25px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+.groups {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+  align-items: start;
+}
+.group {
+  min-width: 0;
+  border: 1px solid #263243;
+  border-radius: 8px;
+  padding: 18px;
+}
+.group h3 {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: #cbd9e8;
+}
+.group dl {
+  display: grid;
+  gap: 14px;
+}
+.group dl > div {
+  display: grid;
+  gap: 6px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #263243;
+}
+.group dl > div:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+.group dt {
+  font-size: 11px;
+  color: #8da1b6;
+}
+.group dd {
+  font-size: 14px;
+  color: #d6e2ef;
+  overflow-wrap: anywhere;
+  font-variant-numeric: tabular-nums;
+}
+.group dd small {
+  display: block;
+  font-size: 10px;
+  color: #738aa2;
+  line-height: 1.7;
+  margin-top: 5px;
+}
+.chartArea {
+  border-top: 1px solid #263243;
+  padding-top: 20px;
+  margin-top: 22px;
+  min-width: 0;
+}
+.chartToolbar {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.chartSelect {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+.chartSelect label {
+  font-size: 11px;
+  color: #8da1b6;
+}
+.chartSelect select {
+  color: #d6e2ef;
+  background: #0f1824;
+  border: 1px solid #304155;
+  border-radius: 6px;
+  padding: 8px;
+  font-size: 12px;
+  max-width: 100%;
+}
+.footnote {
+  margin-top: 16px;
+}
+@media (max-width: 1100px) {
+  .groups {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 680px) {
+  .panel {
+    padding: 18px 16px;
+  }
+  .heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .summary > div {
+    padding: 13px;
+  }
+  .summary strong {
+    font-size: 22px;
+  }
+  .groups {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  .source {
+    margin-left: 0;
+    width: 100%;
+  }
+  .chartSelect {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+  }
+  .tabs button {
+    padding: 9px 13px;
+  }
+}

@@ -6,6 +6,7 @@ import CandleChart, { CandleRaw } from "@/components/stock-candle-chart";
 import VolumeChart, { VolumeChartData } from "@/components/volume-chart";
 import { CommentForm, CommentList } from "@/components/pages/stock-comments";
 import StockCloseAnalysisPanel from "@/components/stock-close-analysis";
+import StockTechnicalPanel from "@/components/stock-technical-panel";
 
 type StockPageParams = {
 	// Match Next's generated PageProps where `params` is a Promise-wrapped SegmentParams
@@ -146,6 +147,7 @@ export default async function StockDetailPage({ params }: StockPageParams) {
 				</div>
 			)}
 
+			<StockTechnicalPanel key={`technicals-${stock.code}`} stockCode={stock.code} dailyCandles={candles} dailyVolumes={volumesData} />
 			{/* 出来高チャート */}
 
 			{/* 最終更新日  */}

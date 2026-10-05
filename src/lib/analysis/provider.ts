@@ -91,6 +91,9 @@ async function fetchChunk(
       "PROVIDER",
     );
   return chart.timestamp.flatMap((time, i) => {
+    // Cache only bars completed at this fetch's boundary. A cached partial
+    // 5m/15m bar must never become "closed" just because wall time advances.
+    if (time + seconds[interval] > end) return [];
     const [open, high, low, close, volume] = [
       quote.open[i],
       quote.high[i],

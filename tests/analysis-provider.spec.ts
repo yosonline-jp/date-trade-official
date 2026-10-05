@@ -7,7 +7,10 @@ import { AnalysisError } from "../src/lib/analysis/signal";
 import { seconds } from "../src/lib/analysis/similarity";
 import type { Interval } from "../src/lib/analysis/types";
 
-function provider(fetcher: (url: URL) => Promise<Response>) {
+function provider(
+  fetcher: (url: URL) => Promise<Response>,
+  clock: Pick<typeof Date, "now"> & (new (value: number) => Date) = Date,
+) {
   const exported = {};
   runInNewContext(
     ts.transpileModule(readFileSync("src/lib/analysis/provider.ts", "utf8"), {
@@ -18,7 +21,7 @@ function provider(fetcher: (url: URL) => Promise<Response>) {
     }).outputText,
     {
       exports: exported,
-      Date,
+      Date: clock,
       Error,
       Map,
       Set,
@@ -129,4 +132,26 @@ test("holiday-only chunks and recess quotes are excluded without fabricated cand
     ]),
   );
   expect(await filtered.getIntradayData("7203.T", "1m")).toEqual([]);
+});
+test("cached partial bars cannot become completed bars as the clock advances", async () => {
+  let now = Date.parse("2026-10-05T10:04:45+09:00"),
+    calls = 0;
+  class SnapshotDate extends Date {
+    static now() {
+      return now;
+    }
+  }
+  const closed = Date.parse("2026-10-05T09:55:00+09:00") / 1000;
+  const partial = Date.parse("2026-10-05T10:00:00+09:00") / 1000;
+  const p = provider(async () => {
+    calls++;
+    return response([closed, partial]);
+  }, SnapshotDate);
+  expect(await p.getIntradayData("7203.T", "5m")).toHaveLength(1);
+  now += 25_000;
+  expect(await p.getIntradayData("7203.T", "5m")).toHaveLength(1);
+  expect(calls).toBe(1);
+  now += 40_000;
+  expect(await p.getIntradayData("7203.T", "5m")).toHaveLength(2);
+  expect(calls).toBe(2);
 });
