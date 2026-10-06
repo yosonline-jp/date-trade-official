@@ -19,6 +19,7 @@ import { ja } from "date-fns/locale";
 import { toDateKey } from "@/utils/utils";
 import { yen as money } from "@/lib/journal";
 import type { ProfitRecord } from "@/components/profit-modal";
+import { BRAND_COLORS } from "@/lib/brand-theme";
 const tone = (value: number) =>
   value > 0 ? "positive" : value < 0 ? "negative" : "neutral";
 const RecordsContext = createContext<Record<string, ProfitRecord>>({});
@@ -155,8 +156,8 @@ export default function CalendarPanel({
         data-share-summary
         style={{
           padding: "20px 28px",
-          color: "#e3edf5",
-          background: "#182635",
+          color: BRAND_COLORS.text,
+          background: BRAND_COLORS.panel,
           fontSize: 18,
         }}
       >

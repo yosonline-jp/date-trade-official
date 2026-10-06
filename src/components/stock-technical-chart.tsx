@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { BRAND_COLORS } from "@/lib/brand-theme";
 import {
   Bar,
   CartesianGrid,
@@ -36,7 +37,13 @@ type Series = {
   bar?: boolean;
   right?: boolean;
 };
-const colors = ["#65dfbd", "#e1b767", "#ee8798", "#8bbaff", "#b69af0"];
+const colors = [
+  BRAND_COLORS.accent,
+  "#e1b767",
+  "#ee8798",
+  "#8bbaff",
+  "#b69af0",
+];
 const definitions: Record<
   Exclude<TechnicalChartKind, "price">,
   {
@@ -97,7 +104,7 @@ const definitions: Record<
     title: "ADX・DMI(14)",
     series: [
       { key: "adx", label: "ADX", color: colors[1] },
-      { key: "plusDI", label: "+DI", color: colors[0] },
+      { key: "plusDI", label: "+DI", color: BRAND_COLORS.positive },
       { key: "minusDI", label: "−DI", color: colors[2] },
     ],
     references: [20, 25],
@@ -248,7 +255,7 @@ export default function StockTechnicalChart({
                         : value.filter((key) => key !== s.key),
                     )
                   }
-                  style={{ accentColor: "#65dfbd" }}
+                  style={{ accentColor: BRAND_COLORS.accent }}
                 />
                 {s.label}
               </label>
@@ -282,7 +289,7 @@ export default function StockTechnicalChart({
               margin={{ top: 12, right: 8, bottom: 6, left: 0 }}
             >
               <CartesianGrid
-                stroke="#263243"
+                stroke={BRAND_COLORS.grid}
                 strokeDasharray="3 5"
                 vertical={false}
               />
@@ -292,7 +299,7 @@ export default function StockTechnicalChart({
                 tickFormatter={(v) =>
                   formatter.format(new Date(Number(v) * 1000))
                 }
-                tick={{ fill: "#8198af", fontSize: 10 }}
+                tick={{ fill: BRAND_COLORS.muted, fontSize: 10 }}
               />
               <YAxis
                 yAxisId="left"
@@ -310,7 +317,7 @@ export default function StockTechnicalChart({
                         : "standard",
                   })
                 }
-                tick={{ fill: "#8198af", fontSize: 10 }}
+                tick={{ fill: BRAND_COLORS.muted, fontSize: 10 }}
               />
               {kind === "volume" && (
                 <YAxis
@@ -333,10 +340,10 @@ export default function StockTechnicalChart({
                       })
                 }
                 contentStyle={{
-                  background: "#142031",
-                  border: "1px solid #304155",
+                  background: BRAND_COLORS.panel,
+                  border: `1px solid ${BRAND_COLORS.border}`,
                   borderRadius: 8,
-                  color: "#e8f0fa",
+                  color: BRAND_COLORS.text,
                 }}
               />
               {config.references?.map((y) => (
@@ -344,7 +351,7 @@ export default function StockTechnicalChart({
                   key={y}
                   yAxisId="left"
                   y={y}
-                  stroke="#50647d"
+                  stroke={BRAND_COLORS.muted}
                   strokeDasharray="3 4"
                 />
               ))}
@@ -377,11 +384,11 @@ export default function StockTechnicalChart({
           </ResponsiveContainer>
         </div>
       ) : (
-        <p style={{ color: "#8198af", fontSize: 12 }}>
+        <p style={{ color: BRAND_COLORS.muted, fontSize: 12 }}>
           この指標の計算に必要なデータが不足しています。
         </p>
       )}
-      <p style={{ color: "#8198af", fontSize: 10, marginTop: 8 }}>
+      <p style={{ color: BRAND_COLORS.muted, fontSize: 10, marginTop: 8 }}>
         直近{points.length}本 · 日本時間 ·
         必要な期間に満たない部分は描画しません
       </p>

@@ -1,4 +1,5 @@
 "use client";
+import { BRAND_COLORS } from "@/lib/brand-theme";
 
 import { useId, useMemo, useState } from "react";
 
@@ -102,7 +103,7 @@ export default function MiniCandleChart({
         </defs>
         <path
           d={`M8 ${chart.bottom} H${width - 8}`}
-          stroke="#314358"
+          stroke={BRAND_COLORS.grid}
           strokeWidth="1"
           strokeDasharray="3 4"
         />
@@ -129,7 +130,7 @@ export default function MiniCandleChart({
           cy={selected.y}
           r={hover === null ? 3.5 : 4.5}
           fill={color}
-          stroke="#152236"
+          stroke={BRAND_COLORS.panel}
           strokeWidth="2"
         />
       </svg>

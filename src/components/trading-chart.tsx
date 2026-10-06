@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useId, useMemo, useRef, useState } from "react";
+import { BRAND_COLORS } from "@/lib/brand-theme";
 import {
   clampViewport,
   heikinAshi,
@@ -53,7 +54,7 @@ const AUXILIARY_PANELS: Record<
     title: "RCI(7,26) · 指数",
     references: [-80, 80],
     series: [
-      { key: "rci", name: "RCI7", color: "#72d9c0" },
+      { key: "rci", name: "RCI7", color: BRAND_COLORS.accent },
       { key: "rci26", name: "RCI26", color: "#e3b465" },
     ],
   },
@@ -498,13 +499,13 @@ export default function TradingChart({
                 x2={width - right}
                 y1={y(value)}
                 y2={y(value)}
-                stroke="#273b4d"
+                stroke={BRAND_COLORS.grid}
                 strokeDasharray="3 6"
               />
               <text
                 x={width - right + 9}
                 y={y(value) + 4}
-                fill="#90a6bb"
+                fill={BRAND_COLORS.muted}
                 fontSize="11"
               >
                 {fmt(value, max < 100 ? 2 : 1)}
@@ -512,7 +513,7 @@ export default function TradingChart({
             </g>
           );
         })}
-        <text x={left} y={15} fill="#8ea8bf" fontSize="10">
+        <text x={left} y={15} fill={BRAND_COLORS.muted} fontSize="10">
           {priceStyle === "heikin"
             ? "平均足（合成価格）"
             : priceStyle === "line"
@@ -529,13 +530,16 @@ export default function TradingChart({
                 x,
                 y,
               )}
-              stroke="#62ddb6"
+              stroke={BRAND_COLORS.accent}
               strokeWidth="1.8"
               fill="none"
             />
           ) : (
             chart.priceBars.map((p, i) => {
-              const color = p.close >= p.open ? "#5cdbb5" : "#ee8798";
+              const color =
+                p.close >= p.open
+                  ? BRAND_COLORS.positive
+                  : BRAND_COLORS.negative;
               return (
                 <g
                   key={p.time}
@@ -565,7 +569,7 @@ export default function TradingChart({
             <path
               data-series="BB帯"
               d={bandPath(shown, x, y)}
-              fill="#678db1"
+              fill={BRAND_COLORS.accent}
               fillOpacity=".06"
             />
           )}
@@ -588,14 +592,14 @@ export default function TradingChart({
                   x2={width - right}
                   y1={y(value)}
                   y2={y(value)}
-                  stroke={label === "現在値" ? "#65af9d" : "#bcac81"}
+                  stroke={label === "現在値" ? BRAND_COLORS.accent : "#bcac81"}
                   strokeDasharray="5 4"
                   opacity=".65"
                 />
                 <text
                   x={left + 4}
                   y={y(value) - 4}
-                  fill="#b6c5c6"
+                  fill={BRAND_COLORS.muted}
                   fontSize="10"
                 >
                   {String(label)} {fmt(value)}
@@ -633,9 +637,14 @@ export default function TradingChart({
               x2={width - right}
               y1={pane.top - 20}
               y2={pane.top - 20}
-              stroke="#304353"
+              stroke={BRAND_COLORS.border}
             />
-            <text x={left} y={pane.top - 7} fill="#a3bbce" fontSize="11">
+            <text
+              x={left}
+              y={pane.top - 7}
+              fill={BRAND_COLORS.muted}
+              fontSize="11"
+            >
               {pane.kind === "volume"
                 ? "出来高（株）"
                 : pane.kind === "rsi"
@@ -651,13 +660,13 @@ export default function TradingChart({
                   x2={width - right}
                   y1={pane.y(v)}
                   y2={pane.y(v)}
-                  stroke="#263847"
+                  stroke={BRAND_COLORS.grid}
                   strokeDasharray="3 6"
                 />
                 <text
                   x={width - right + 9}
                   y={pane.y(v) + 4}
-                  fill="#829db3"
+                  fill={BRAND_COLORS.muted}
                   fontSize="10"
                 >
                   {pane.kind === "volume" && v >= 10000
@@ -722,7 +731,7 @@ export default function TradingChart({
                   x2={width - right}
                   y1={pane.y(0)}
                   y2={pane.y(0)}
-                  stroke="#7d97a8"
+                  stroke={BRAND_COLORS.muted}
                   strokeDasharray="3 4"
                 />
                 {shown.map((p, i) =>
@@ -813,7 +822,7 @@ export default function TradingChart({
               key={i}
               x={x(index)}
               y={chart.totalHeight - 10}
-              fill="#90a8bd"
+              fill={BRAND_COLORS.muted}
               fontSize="10"
               textAnchor={
                 i === 0 ? "start" : i === ticks - 1 ? "end" : "middle"
@@ -1000,7 +1009,7 @@ export default function TradingChart({
     const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
     rect.setAttribute("width", "100%");
     rect.setAttribute("height", "100%");
-    rect.setAttribute("fill", "#111c28");
+    rect.setAttribute("fill", BRAND_COLORS.panel);
     copy.insertBefore(rect, copy.firstChild);
     const label = document.createElementNS(
       "http://www.w3.org/2000/svg",
@@ -1008,7 +1017,7 @@ export default function TradingChart({
     );
     label.setAttribute("x", "14");
     label.setAttribute("y", String(chart.totalHeight + 18));
-    label.setAttribute("fill", "#b6c9dc");
+    label.setAttribute("fill", BRAND_COLORS.text);
     label.setAttribute("font-size", "10");
     label.textContent = `${interval} · ${dateLabel(shown[0].time, intraday)} – ${dateLabel(shown.at(-1)!.time, intraday)} JST · ${chart.lines.map((a) => a.id).join(" / ")}`;
     copy.appendChild(label);
@@ -1492,7 +1501,7 @@ export default function TradingChart({
               x2={x(selectedIndex)}
               y1={chart.top}
               y2={chart.totalHeight - 30}
-              stroke="#97adc0"
+              stroke={BRAND_COLORS.accent}
               strokeDasharray="4 4"
               pointerEvents="none"
             />
@@ -1503,7 +1512,7 @@ export default function TradingChart({
                   x2={width - chart.right}
                   y1={pointerY}
                   y2={pointerY}
-                  stroke="#97adc0"
+                  stroke={BRAND_COLORS.accent}
                   strokeDasharray="4 4"
                 />
                 <rect
@@ -1511,13 +1520,13 @@ export default function TradingChart({
                   y={pointerY - 10}
                   width={chart.right - 4}
                   height="20"
-                  fill="#304b60"
+                  fill={BRAND_COLORS.accentSoft}
                   rx="2"
                 />
                 <text
                   x={width - chart.right + 7}
                   y={pointerY + 4}
-                  fill="#e2edf4"
+                  fill={BRAND_COLORS.text}
                   fontSize="10"
                 >
                   {fmt(chart.inverseY(pointerY))}

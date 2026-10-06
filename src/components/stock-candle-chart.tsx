@@ -1,5 +1,6 @@
 ﻿"use client";
 import { useMemo, useState } from "react";
+import { BRAND_COLORS } from "@/lib/brand-theme";
 export type CandleRaw = {
   high: number;
   low: number;
@@ -83,13 +84,13 @@ export default function CandleChart({
                 x2={W - right}
                 y1={y(value)}
                 y2={y(value)}
-                stroke="#27374b"
+                stroke={BRAND_COLORS.grid}
                 strokeDasharray="3 6"
               />
               <text
                 x={W - right + 12}
                 y={y(value) + 4}
-                fill="#7f94ad"
+                fill={BRAND_COLORS.muted}
                 fontSize={12}
               >
                 {value.toLocaleString("ja-JP", { maximumFractionDigits: 0 })}
@@ -102,7 +103,8 @@ export default function CandleChart({
     const candles = (
       <>
         {filtered.map((p, i) => {
-          const color = p.close >= p.open ? "#5cdbb5" : "#ee8798";
+          const color =
+            p.close >= p.open ? BRAND_COLORS.positive : BRAND_COLORS.negative;
           return (
             <g key={`${p.ts}-${i}`}>
               <title>
@@ -139,7 +141,7 @@ export default function CandleChart({
               key={i}
               x={x(idx)}
               y={H - 8}
-              fill="#7f94ad"
+              fill={BRAND_COLORS.muted}
               fontSize={12}
               textAnchor={i === 0 ? "start" : i === 4 ? "end" : "middle"}
             >
@@ -191,7 +193,7 @@ export default function CandleChart({
         <button
           aria-pressed={showAverage}
           onClick={() => setShowAverage(!showAverage)}
-          style={{ color: showAverage ? "#e1b767" : "#73869b" }}
+          style={{ color: showAverage ? "#e1b767" : BRAND_COLORS.muted }}
         >
           MA25 {showAverage ? "ON" : "OFF"}
         </button>
@@ -240,7 +242,7 @@ export default function CandleChart({
             x2={x(hover)}
             y1={top}
             y2={H - bottom}
-            stroke="#8298ac"
+            stroke={BRAND_COLORS.muted}
             strokeDasharray="4 4"
           />
         )}

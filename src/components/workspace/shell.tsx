@@ -1,5 +1,6 @@
 ﻿"use client";
 import Link from "next/link";
+import BrandLogo from "@/components/brand-logo";
 import { SHOW_BOT_MONITOR, SHOW_MARKET_NEWS } from "@/lib/features";
 import { usePathname } from "next/navigation";
 import {
@@ -105,10 +106,8 @@ export function WorkspaceShell({
           className="terminal-brand"
           onClick={() => setOpen(false)}
         >
-          <span className="brand-symbol">
-            <ChartCandlestick size={23} />
-          </span>
-          <span>
+          <BrandLogo size={44} priority />
+          <span className="brand-wordmark">
             DAYTRADE<span className="brand-dot">.</span>
             <small>JAPAN EQUITY WORKSPACE</small>
           </span>
@@ -197,7 +196,7 @@ export function WorkspaceShell({
       )}
       <div className="terminal-main">
         <header className="terminal-topbar">
-          <div className="flex items-center gap-3">
+          <div className="topbar-leading flex min-w-0 items-center gap-3">
             <button
               className="mobile-menu"
               aria-label="メニューを開く"
@@ -206,9 +205,12 @@ export function WorkspaceShell({
             >
               <Menu size={22} />
             </button>
+            <Link href="/" className="mobile-brand">
+              <BrandLogo size={32} />
+            </Link>
             <span className="topbar-label">WORKSPACE</span>
             <ChevronRight size={13} />
-            <span>
+            <span className="topbar-page-label">
               {links.find((l) => active(l.href))?.label || "デイトレード.net"}
             </span>
           </div>
@@ -229,7 +231,12 @@ export function WorkspaceShell({
           {children}
         </main>
         <footer className="terminal-footer">
-          <span>© {new Date().getFullYear()} DAYTRADE.　デイトレード.net</span>
+          <span className="terminal-footer-brand">
+            <BrandLogo size={24} />
+            <span>
+              © {new Date().getFullYear()} DAYTRADE.　デイトレード.net
+            </span>
+          </span>
           <div>
             <Link href="/about">ABOUT</Link>
             <Link href="/contact">お問い合わせ</Link>

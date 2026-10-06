@@ -21,7 +21,7 @@
 }
 
 .heading h2 svg {
-  color: #7db7b0;
+  color: var(--dt-accent);
 }
 
 .heading button {
@@ -36,7 +36,7 @@
 .description,
 .status {
   margin-top: 8px;
-  color: #8da1b6;
+  color: var(--dt-text-muted);
   font-size: 13px;
   line-height: 1.8;
 }
@@ -47,12 +47,12 @@
   flex-wrap: wrap;
   gap: 8px 20px;
   margin-top: 24px;
-  color: #8da1b6;
+  color: var(--dt-text-muted);
   font-size: 12px;
 }
 
 .meta strong {
-  color: #e8f0fa;
+  color: var(--dt-text);
   font-weight: 500;
 }
 
@@ -72,16 +72,16 @@
 
 .values > div {
   padding: 16px 18px;
-  border: 1px solid #2b3c4c;
+  border: 1px solid var(--dt-border);
   border-radius: 10px;
-  background: #142130;
+  background: var(--dt-surface);
   min-width: 0;
 }
 
 .values dt,
 .indicators dt {
   font-size: 12px;
-  color: #8da1b6;
+  color: var(--dt-text-muted);
 }
 
 .values dd {
@@ -99,18 +99,18 @@
 .details {
   margin-top: 20px;
   padding-top: 16px;
-  border-top: 1px solid #2b3c4c;
+  border-top: 1px solid var(--dt-border);
 }
 
 .details summary {
   width: fit-content;
-  color: #a8c8c5;
+  color: var(--dt-accent);
   font-size: 13px;
   cursor: pointer;
 }
 
 .details summary:focus-visible {
-  outline: 2px solid #79e0c1;
+  outline: 2px solid var(--dt-accent);
   outline-offset: 5px;
 }
 
@@ -132,7 +132,7 @@
   margin-top: 8px;
   font-size: 11px;
   line-height: 1.8;
-  color: #8198af;
+  color: var(--dt-text-muted);
 }
 
 .footnote {

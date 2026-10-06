@@ -1,5 +1,6 @@
 ﻿import Link from "next/link";
-import { ChartCandlestick, ArrowLeft } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
+import BrandLogo from "@/components/brand-logo";
 export default function AuthLayout({
   children,
 }: {
@@ -9,10 +10,8 @@ export default function AuthLayout({
     <div className="auth-screen">
       <div className="auth-story">
         <Link href="/" className="terminal-brand">
-          <span className="brand-symbol">
-            <ChartCandlestick />
-          </span>
-          <span>
+          <BrandLogo size={44} priority />
+          <span className="brand-wordmark">
             DAYTRADE<span className="brand-dot">.</span>
             <small>JAPAN EQUITY WORKSPACE</small>
           </span>

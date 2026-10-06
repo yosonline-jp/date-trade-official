@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { BRAND_COLORS } from "@/lib/brand-theme";
 import {
   Area,
   Bar,
@@ -103,7 +104,7 @@ export default function TradeProgressClient({
                   </linearGradient>
                 </defs>
                 <CartesianGrid
-                  stroke="#273549"
+                  stroke={BRAND_COLORS.grid}
                   strokeDasharray="3 6"
                   vertical={false}
                 />
@@ -111,33 +112,40 @@ export default function TradeProgressClient({
                   dataKey="label"
                   axisLine={false}
                   tickLine={false}
-                  tick={{ fill: "#72869d", fontSize: 10 }}
+                  tick={{ fill: BRAND_COLORS.muted, fontSize: 10 }}
                   interval={period === "30d" ? 5 : 0}
                   dy={10}
                 />
                 <YAxis
                   axisLine={false}
                   tickLine={false}
-                  tick={{ fill: "#72869d", fontSize: 10 }}
+                  tick={{ fill: BRAND_COLORS.muted, fontSize: 10 }}
                   tickFormatter={compactYen}
                   width={51}
                 />
                 <Tooltip
-                  cursor={{ stroke: "#6b8299", strokeDasharray: "4 4" }}
+                  cursor={{
+                    stroke: BRAND_COLORS.muted,
+                    strokeDasharray: "4 4",
+                  }}
                   contentStyle={{
-                    background: "#172332",
-                    border: "1px solid #34465a",
+                    background: BRAND_COLORS.panel,
+                    border: `1px solid ${BRAND_COLORS.border}`,
                     borderRadius: 10,
-                    color: "#e4eaf3",
+                    color: BRAND_COLORS.text,
                     fontSize: 12,
                   }}
-                  labelStyle={{ color: "#9aacc0" }}
+                  labelStyle={{ color: BRAND_COLORS.muted }}
                   formatter={(value, name) => [
                     `¥${Number(value).toLocaleString("ja-JP")}`,
                     name,
                   ]}
                 />
-                <ReferenceLine y={0} stroke="#52667d" strokeDasharray="3 3" />
+                <ReferenceLine
+                  y={0}
+                  stroke={BRAND_COLORS.muted}
+                  strokeDasharray="3 3"
+                />
                 {period === "30d" && (
                   <Area
                     type="monotone"
@@ -150,7 +158,7 @@ export default function TradeProgressClient({
                     activeDot={{
                       r: 5,
                       fill: "#66e2bf",
-                      stroke: "#10251f",
+                      stroke: BRAND_COLORS.panel,
                       strokeWidth: 2,
                     }}
                   />

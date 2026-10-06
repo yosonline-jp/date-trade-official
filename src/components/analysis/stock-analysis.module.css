@@ -8,7 +8,7 @@
 .searchPanel label {
   display: block;
   font-size: 12px;
-  color: #b5c5d8;
+  color: var(--dt-text-soft);
   margin-bottom: 12px;
 }
 .searchRow {
@@ -20,11 +20,11 @@
   align-items: center;
   gap: 12px;
   flex: 1;
-  border: 1px solid #304155;
-  background: #0f1824;
+  border: 1px solid var(--dt-border);
+  background: var(--dt-surface-input);
   border-radius: 7px;
   padding: 0 14px;
-  color: #8798ad;
+  color: var(--dt-text-muted);
 }
 .searchInput input {
   width: 100%;
@@ -32,11 +32,11 @@
   padding: 13px 0;
   font-size: 13px;
   background: transparent;
-  color: #e8f0fa;
+  color: var(--dt-text);
   outline: none;
 }
 .searchInput:focus-within {
-  border-color: #65dfbd;
+  border-color: var(--dt-accent);
 }
 .searchRow button {
   flex-shrink: 0;
@@ -47,12 +47,12 @@
 }
 .candidates {
   margin-top: 12px;
-  border: 1px solid #304155;
+  border: 1px solid var(--dt-border);
   border-radius: 7px;
   overflow: hidden;
 }
 .candidates li + li {
-  border-top: 1px solid #263243;
+  border-top: 1px solid var(--dt-border);
 }
 .candidates button {
   width: 100%;
@@ -65,10 +65,10 @@
 }
 .candidates button:hover,
 .candidates button:focus-visible {
-  background: #1e2d40;
+  background: var(--dt-surface-raised);
 }
 .candidates small {
-  color: #8798ad;
+  color: var(--dt-text-muted);
   margin-left: auto;
 }
 .selection {
@@ -82,11 +82,11 @@
 .selection a {
   display: inline-flex;
   gap: 5px;
-  color: #65dfbd;
+  color: var(--dt-accent);
   margin-left: auto;
 }
 .note {
-  color: #8798ad;
+  color: var(--dt-text-muted);
   font-size: 11px;
   line-height: 1.9;
   margin-top: 14px;
@@ -153,12 +153,12 @@
   gap: 16px;
   padding: 20px 0;
   margin-top: 16px;
-  border-top: 1px solid #263243;
-  border-bottom: 1px solid #263243;
+  border-top: 1px solid var(--dt-border);
+  border-bottom: 1px solid var(--dt-border);
 }
 .summary dt {
   font-size: 11px;
-  color: #8798ad;
+  color: var(--dt-text-muted);
 }
 .summary dd {
   margin-top: 9px;
@@ -166,7 +166,7 @@
 }
 .summary small {
   font-size: 11px;
-  color: #8798ad;
+  color: var(--dt-text-muted);
   margin-left: 5px;
 }
 .planGrid {
@@ -191,11 +191,11 @@
   justify-content: space-between;
   gap: 10px;
   font-size: 11px;
-  border-bottom: 1px solid #263243;
+  border-bottom: 1px solid var(--dt-border);
   padding-bottom: 10px;
 }
 .indicators dt {
-  color: #8798ad;
+  color: var(--dt-text-muted);
   flex-shrink: 0;
 }
 .indicators dd {
@@ -216,12 +216,12 @@
 .tableWrap th,
 .tableWrap td {
   padding: 14px 12px;
-  border-bottom: 1px solid #263243;
+  border-bottom: 1px solid var(--dt-border);
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
 }
 .tableWrap thead {
-  color: #8798ad;
+  color: var(--dt-text-muted);
   font-size: 11px;
 }
 .reasons {
@@ -234,10 +234,10 @@
   display: flex;
   align-items: start;
   gap: 8px;
-  color: #8798ad;
+  color: var(--dt-text-muted);
 }
 .reasons li[data-met="true"] {
-  color: #65dfbd;
+  color: var(--dt-accent);
 }
 .reasons small {
   margin-left: auto;
@@ -249,20 +249,20 @@
   margin: 20px 0;
 }
 .tabs button {
-  border: 1px solid #304155;
+  border: 1px solid var(--dt-border);
   border-radius: 6px;
   padding: 8px 14px;
   font-size: 12px;
 }
 .tabs button[aria-pressed="true"] {
-  border-color: #65dfbd;
-  color: #65dfbd;
-  background: #15352f;
+  border-color: var(--dt-accent);
+  color: var(--dt-accent);
+  background: var(--dt-accent-soft);
 }
 .disclaimer {
   margin-top: 24px;
   font-size: 11px;
-  color: #8798ad;
+  color: var(--dt-text-muted);
   line-height: 1.9;
 }
 @media (max-width: 1250px) {

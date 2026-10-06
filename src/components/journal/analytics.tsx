@@ -1,5 +1,6 @@
 "use client";
 import { useMemo, useState } from "react";
+import { BRAND_COLORS } from "@/lib/brand-theme";
 import { analyzeTrades, yen, type Trade } from "@/lib/journal";
 import {
   LineChart,
@@ -151,10 +152,17 @@ export default function Analytics({ trades }: { trades: Trade[] }) {
               <div className="h-72 w-full" data-share-money>
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={stats.curve}>
-                    <CartesianGrid stroke="#2b3d4e" />
-                    <XAxis dataKey="date" stroke="#88a0b5" />
-                    <YAxis stroke="#88a0b5" />
-                    <Tooltip formatter={(v) => yen(Number(v))} />
+                    <CartesianGrid stroke={BRAND_COLORS.grid} />
+                    <XAxis dataKey="date" stroke={BRAND_COLORS.muted} />
+                    <YAxis stroke={BRAND_COLORS.muted} />
+                    <Tooltip
+                      formatter={(v) => yen(Number(v))}
+                      contentStyle={{
+                        background: BRAND_COLORS.panel,
+                        border: `1px solid ${BRAND_COLORS.border}`,
+                        color: BRAND_COLORS.text,
+                      }}
+                    />
                     <Line
                       type="monotone"
                       dataKey="balance"

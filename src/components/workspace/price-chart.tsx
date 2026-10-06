@@ -1,5 +1,6 @@
 ﻿"use client";
 import { useId, useMemo, useState } from "react";
+import { BRAND_COLORS } from "@/lib/brand-theme";
 import {
   Area,
   AreaChart,
@@ -79,7 +80,7 @@ export function PriceChart({
               </defs>
               <CartesianGrid
                 vertical={false}
-                stroke="#253344"
+                stroke={BRAND_COLORS.grid}
                 strokeDasharray="3 5"
               />
               <XAxis
@@ -92,7 +93,7 @@ export function PriceChart({
                     timeZone: "Asia/Tokyo",
                   })
                 }
-                tick={{ fill: "#7e91a8", fontSize: 11 }}
+                tick={{ fill: BRAND_COLORS.muted, fontSize: 11 }}
                 axisLine={false}
                 tickLine={false}
               />
@@ -100,7 +101,7 @@ export function PriceChart({
                 orientation="right"
                 domain={["auto", "auto"]}
                 tickFormatter={(v) => v.toLocaleString("ja-JP")}
-                tick={{ fill: "#7e91a8", fontSize: 11 }}
+                tick={{ fill: BRAND_COLORS.muted, fontSize: 11 }}
                 axisLine={false}
                 tickLine={false}
                 width={66}
@@ -116,10 +117,10 @@ export function PriceChart({
                   label,
                 ]}
                 contentStyle={{
-                  background: "#142031",
-                  border: "1px solid #304155",
+                  background: BRAND_COLORS.panel,
+                  border: `1px solid ${BRAND_COLORS.border}`,
                   borderRadius: 10,
-                  color: "#e8f0fa",
+                  color: BRAND_COLORS.text,
                 }}
               />
               <Area

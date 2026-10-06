@@ -1,4 +1,5 @@
 import Link from "next/link";
+import BrandLogo from "@/components/brand-logo";
 import {
   ArrowRight,
   ArrowUpRight,
@@ -80,7 +81,7 @@ export default function AboutPage() {
         </div>
         <figure className="about-cycle">
           <div className="about-cycle-mark">
-            <ChartCandlestick size={42} aria-hidden="true" />
+            <BrandLogo size={64} className="about-brand-logo" />
             <span>
               DAYTRADE<span className="heading-dot">.</span>
             </span>

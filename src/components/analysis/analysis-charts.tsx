@@ -1,5 +1,6 @@
 "use client";
 import { useMemo } from "react";
+import { BRAND_COLORS } from "@/lib/brand-theme";
 import {
   CartesianGrid,
   Line,
@@ -16,7 +17,7 @@ const date = new Intl.DateTimeFormat("ja-JP", {
   minute: "2-digit",
   timeZone: "Asia/Tokyo",
 });
-const colors = ["#65dfbd", "#e1b767", "#ee8798", "#8bbaff"];
+const colors = [BRAND_COLORS.accent, "#e1b767", "#ee8798", "#8bbaff"];
 export default function AnalysisCharts({
   points,
   projections,
@@ -49,7 +50,7 @@ export default function AnalysisCharts({
       {groups.map((group, index) => (
         <div key={group.title} style={{ marginTop: 20 }}>
           <h3>{group.title}</h3>
-          <p style={{ color: "#8798ad", fontSize: 11 }}>
+          <p style={{ color: BRAND_COLORS.muted, fontSize: 11 }}>
             {group.labels.map((label, i) => (
               <span key={label} style={{ color: colors[i], marginRight: 14 }}>
                 {label}
@@ -66,12 +67,15 @@ export default function AnalysisCharts({
                 data={points}
                 margin={{ top: 15, right: 10, bottom: 5, left: 0 }}
               >
-                <CartesianGrid stroke="#263243" strokeDasharray="3 5" />
+                <CartesianGrid
+                  stroke={BRAND_COLORS.grid}
+                  strokeDasharray="3 5"
+                />
                 <XAxis
                   dataKey="time"
                   tickFormatter={(v) => date.format(new Date(Number(v) * 1000))}
                   minTickGap={45}
-                  tick={{ fill: "#8798ad", fontSize: 10 }}
+                  tick={{ fill: BRAND_COLORS.muted, fontSize: 10 }}
                 />
                 <YAxis
                   domain={
@@ -81,7 +85,7 @@ export default function AnalysisCharts({
                         ? [0, 100]
                         : ["auto", "auto"]
                   }
-                  tick={{ fill: "#8798ad", fontSize: 10 }}
+                  tick={{ fill: BRAND_COLORS.muted, fontSize: 10 }}
                   width={60}
                   tickFormatter={(v) =>
                     Number(v).toLocaleString("ja-JP", {
@@ -101,10 +105,10 @@ export default function AnalysisCharts({
                         })
                   }
                   contentStyle={{
-                    background: "#142031",
-                    border: "1px solid #304155",
+                    background: BRAND_COLORS.panel,
+                    border: `1px solid ${BRAND_COLORS.border}`,
                     borderRadius: 8,
-                    color: "#e8f0fa",
+                    color: BRAND_COLORS.text,
                   }}
                 />
                 {index === 1 &&
@@ -112,7 +116,7 @@ export default function AnalysisCharts({
                     <ReferenceLine
                       key={y}
                       y={y}
-                      stroke="#50647d"
+                      stroke={BRAND_COLORS.muted}
                       strokeDasharray="3 4"
                     />
                   ))}
@@ -151,7 +155,12 @@ export default function AnalysisCharts({
             />
             {bands.map((p, i) => (
               <g key={p.rci}>
-                <text x={0} y={i * 34 + 26} fill="#8798ad" fontSize={12}>
+                <text
+                  x={0}
+                  y={i * 34 + 26}
+                  fill={BRAND_COLORS.muted}
+                  fontSize={12}
+                >
                   RCI {p.rci}
                 </text>
                 <rect
@@ -159,16 +168,21 @@ export default function AnalysisCharts({
                   y={i * 34 + 13}
                   width={Math.max(2, x(p.upperPrice!) - x(p.lowerPrice!))}
                   height={17}
-                  fill="#65dfbd"
+                  fill={BRAND_COLORS.accent}
                   opacity={0.25}
                 />
                 <circle
                   cx={x(p.expectedPrice!)}
                   cy={i * 34 + 21}
                   r={4}
-                  fill="#65dfbd"
+                  fill={BRAND_COLORS.accent}
                 />
-                <text x={690} y={i * 34 + 26} fill="#c6d1df" fontSize={11}>
+                <text
+                  x={690}
+                  y={i * 34 + 26}
+                  fill={BRAND_COLORS.text}
+                  fontSize={11}
+                >
                   {p.expectedPrice!.toLocaleString("ja-JP", {
                     maximumFractionDigits: 2,
                   })}

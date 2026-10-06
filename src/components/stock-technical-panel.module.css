@@ -18,7 +18,7 @@
   font-weight: 600;
 }
 .heading h2 svg {
-  color: #7db7b0;
+  color: var(--dt-accent);
 }
 .heading button {
   flex-shrink: 0;
@@ -29,7 +29,7 @@
 }
 .note,
 .footnote {
-  color: #8da1b6;
+  color: var(--dt-text-muted);
   font-size: 11px;
   line-height: 1.8;
   margin-top: 10px;
@@ -48,24 +48,24 @@
 }
 .tabs button {
   padding: 9px 16px;
-  border: 1px solid #304155;
+  border: 1px solid var(--dt-border);
   border-radius: 6px;
-  color: #9db0c6;
+  color: var(--dt-text-muted);
   font-size: 12px;
 }
 .tabs button[aria-pressed="true"] {
-  background: #15352f;
-  color: #65dfbd;
-  border-color: #65dfbd;
+  background: var(--dt-accent-soft);
+  color: var(--dt-accent);
+  border-color: var(--dt-accent);
 }
 .tabs button:focus-visible,
 .chartSelect select:focus-visible {
-  outline: 2px solid #65dfbd;
+  outline: 2px solid var(--dt-accent);
   outline-offset: 3px;
 }
 .source {
   font-size: 11px;
-  color: #8198af;
+  color: var(--dt-text-muted);
   margin-left: auto;
 }
 .loading {
@@ -74,7 +74,7 @@
   gap: 8px;
   padding: 20px 0;
   font-size: 13px;
-  color: #9db0c6;
+  color: var(--dt-text-muted);
 }
 .error {
   display: flex;
@@ -92,13 +92,13 @@
   display: flex;
   flex-wrap: wrap;
   gap: 10px 20px;
-  color: #8da1b6;
+  color: var(--dt-text-muted);
   font-size: 11px;
   padding: 14px 0;
-  border-top: 1px solid #263243;
+  border-top: 1px solid var(--dt-border);
 }
 .meta strong {
-  color: #d5e0ee;
+  color: var(--dt-text);
   font-weight: 500;
 }
 .marketState {
@@ -113,15 +113,15 @@
 .summary > div {
   min-width: 0;
   padding: 16px;
-  background: #142130;
-  border: 1px solid #2b3c4c;
+  background: var(--dt-surface);
+  border: 1px solid var(--dt-border);
   border-radius: 8px;
 }
 .summary span,
 .summary small {
   display: block;
   font-size: 11px;
-  color: #8da1b6;
+  color: var(--dt-text-muted);
 }
 .summary strong {
   display: block;
@@ -131,14 +131,15 @@
   font-variant-numeric: tabular-nums;
 }
 .groups {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 20px;
-  align-items: start;
+  /* Stack whole cards in each column without reserving a shared row height. */
+  column-count: 3;
+  column-gap: 20px;
 }
 .group {
+  break-inside: avoid;
+  margin-bottom: 20px;
   min-width: 0;
-  border: 1px solid #263243;
+  border: 1px solid var(--dt-border);
   border-radius: 8px;
   padding: 18px;
 }
@@ -146,7 +147,7 @@
   font-size: 13px;
   font-weight: 600;
   margin-bottom: 16px;
-  color: #cbd9e8;
+  color: var(--dt-text-soft);
 }
 .group dl {
   display: grid;
@@ -156,7 +157,7 @@
   display: grid;
   gap: 6px;
   padding-bottom: 12px;
-  border-bottom: 1px solid #263243;
+  border-bottom: 1px solid var(--dt-border);
 }
 .group dl > div:last-child {
   border-bottom: 0;
@@ -164,23 +165,23 @@
 }
 .group dt {
   font-size: 11px;
-  color: #8da1b6;
+  color: var(--dt-text-muted);
 }
 .group dd {
   font-size: 14px;
-  color: #d6e2ef;
+  color: var(--dt-text);
   overflow-wrap: anywhere;
   font-variant-numeric: tabular-nums;
 }
 .group dd small {
   display: block;
   font-size: 10px;
-  color: #738aa2;
+  color: var(--dt-text-muted);
   line-height: 1.7;
   margin-top: 5px;
 }
 .chartArea {
-  border-top: 1px solid #263243;
+  border-top: 1px solid var(--dt-border);
   padding-top: 20px;
   margin-top: 22px;
   min-width: 0;
@@ -199,12 +200,12 @@
 }
 .chartSelect label {
   font-size: 11px;
-  color: #8da1b6;
+  color: var(--dt-text-muted);
 }
 .chartSelect select {
-  color: #d6e2ef;
-  background: #0f1824;
-  border: 1px solid #304155;
+  color: var(--dt-text);
+  background: var(--dt-surface-input);
+  border: 1px solid var(--dt-border);
   border-radius: 6px;
   padding: 8px;
   font-size: 12px;
@@ -215,7 +216,7 @@
 }
 @media (max-width: 1100px) {
   .groups {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-count: 2;
   }
 }
 @media (max-width: 680px) {
@@ -237,8 +238,10 @@
     font-size: 22px;
   }
   .groups {
-    grid-template-columns: 1fr;
-    gap: 14px;
+    column-count: 1;
+  }
+  .group {
+    margin-bottom: 14px;
   }
   .source {
     margin-left: 0;

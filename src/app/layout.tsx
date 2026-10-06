@@ -6,43 +6,48 @@ import { ThemeProvider } from "next-themes";
 import { Toaster } from "@/components/ui/toaster";
 import type { Viewport } from "next";
 
-
 const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_ID || "";
 
 const defaultUrl = process.env.NEXT_PUBLIC_MAIN_URL
-	? (process.env.NEXT_PUBLIC_MAIN_URL.startsWith("http") ? process.env.NEXT_PUBLIC_MAIN_URL : `https://${process.env.NEXT_PUBLIC_MAIN_URL}`)
-	: "http://localhost:3000";
+  ? process.env.NEXT_PUBLIC_MAIN_URL.startsWith("http")
+    ? process.env.NEXT_PUBLIC_MAIN_URL
+    : `https://${process.env.NEXT_PUBLIC_MAIN_URL}`
+  : "http://localhost:3000";
 
 const metadata = {
-	metadataBase: new URL(defaultUrl),
-	title: "デイトレード.net - あなたのデイトレ実績を記録・分析できるアプリ",
-	description:
-		"デイトレード.netは、毎日のデイトレード結果を簡単に記録・管理できるアプリです。損益の推移、勝率、取引メモなどを自動で整理し、あなたのトレードを次のレベルへ。無料で使える日本株データも搭載！",
-	keywords:
-		"デイトレード, デイトレ, 株式投資, トレード記録, 投資管理, 日本株, チャート, 株価, トレーダー, 投資分析",
+  metadataBase: new URL(defaultUrl),
+  icons: {
+    icon: { url: "/logo-dt.png", type: "image/png" },
+    shortcut: "/logo-dt.png",
+    apple: "/logo-dt.png",
+  },
+  title: "デイトレード.net - あなたのデイトレ実績を記録・分析できるアプリ",
+  description:
+    "デイトレード.netは、毎日のデイトレード結果を簡単に記録・管理できるアプリです。損益の推移、勝率、取引メモなどを自動で整理し、あなたのトレードを次のレベルへ。無料で使える日本株データも搭載！",
+  keywords:
+    "デイトレード, デイトレ, 株式投資, トレード記録, 投資管理, 日本株, チャート, 株価, トレーダー, 投資分析",
 };
 
 const viewport: Viewport = {
-	width: "device-width",
-	initialScale: 1,
-	
-	
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#0b1623",
 };
 
 export { metadata, viewport };
 
 export default async function ClientLayout({
-	children,
+  children,
 }: Readonly<{
-	children: React.ReactNode;
+  children: React.ReactNode;
 }>) {
-	return (
-		<html
-			lang="ja"
-			className={`${maru.variable} ${marubold.variable}`}
-			suppressHydrationWarning
-		>
-			{/* <head>
+  return (
+    <html
+      lang="ja"
+      className={`${maru.variable} ${marubold.variable}`}
+      suppressHydrationWarning
+    >
+      {/* <head>
 				<script
 					data-name="BMC-Widget"
 					data-cfasync="false"
@@ -56,20 +61,18 @@ export default async function ClientLayout({
 					data-y_margin="18"
 				></script>
 			</head> */}
-			<GoogleAnalytics gaId={GA_MEASUREMENT_ID} />
-			<body>
-				<ThemeProvider
-					attribute="class"
-					defaultTheme="dark"
-					enableSystem={false}
-					disableTransitionOnChange
-				>
-					{children}
-				</ThemeProvider>
-				<Toaster />
-				
-			</body>
-		</html>
-	);
+      <GoogleAnalytics gaId={GA_MEASUREMENT_ID} />
+      <body>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="dark"
+          enableSystem={false}
+          disableTransitionOnChange
+        >
+          {children}
+        </ThemeProvider>
+        <Toaster />
+      </body>
+    </html>
+  );
 }
-

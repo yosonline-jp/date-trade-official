@@ -62,8 +62,8 @@
   .trade-mobile-card {
     min-width: 0;
     padding: 16px;
-    border: 1px solid #304157;
-    background: #172332;
+    border: 1px solid var(--dt-border);
+    background: var(--dt-surface);
     border-radius: 12px;
   }
   .trade-mobile-card-heading {
@@ -76,14 +76,14 @@
     min-width: 0;
   }
   .trade-mobile-card-heading small {
-    color: #8299b1;
+    color: var(--dt-text-muted);
     font-size: 11px;
   }
   .trade-mobile-card-heading h3 {
     margin-top: 7px;
     font-size: 14px;
     line-height: 1.6;
-    color: #e7eff6;
+    color: var(--dt-text);
     overflow-wrap: anywhere;
   }
   .trade-mobile-card .trade-delete {
@@ -112,25 +112,25 @@
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 10px;
     padding-top: 14px;
-    border-top: 1px solid #2b3c50;
+    border-top: 1px solid var(--dt-border);
   }
   .trade-mobile-card dt {
-    color: #8299b1;
+    color: var(--dt-text-muted);
     font-size: 10px;
   }
   .trade-mobile-card dd {
     margin-top: 5px;
     font-size: 12px;
-    color: #cbd9e6;
+    color: var(--dt-text-soft);
     overflow-wrap: anywhere;
     font-variant-numeric: tabular-nums;
   }
   .trade-mobile-memo {
     margin-top: 16px;
     padding-top: 12px;
-    border-top: 1px solid #2b3c50;
+    border-top: 1px solid var(--dt-border);
     font-size: 12px;
-    color: #91a7ba;
+    color: var(--dt-text-muted);
     line-height: 1.8;
     white-space: pre-wrap;
     overflow-wrap: anywhere;
