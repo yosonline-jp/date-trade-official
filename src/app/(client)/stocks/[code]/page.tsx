@@ -2,8 +2,9 @@ import { getStockDetail } from "@/lib/market/stock-detail";
 import WatchlistButton from "@/components/watchlist-btn";
 import Link from "next/link";
 import { ArrowLeft, ArrowUpRight, TrendingUp, TrendingDown, BarChart3, MessageSquare, Clock3 } from "lucide-react";
-import CandleChart, { CandleRaw } from "@/components/stock-candle-chart";
-import VolumeChart, { VolumeChartData } from "@/components/volume-chart";
+import type { CandleRaw } from "@/components/stock-candle-chart";
+import StockDetailChart from "@/components/stock-detail-chart";
+import type { VolumeChartData } from "@/components/volume-chart";
 import { CommentForm, CommentList } from "@/components/pages/stock-comments";
 import StockCloseAnalysisPanel from "@/components/stock-close-analysis";
 import StockTechnicalPanel from "@/components/stock-technical-panel";
@@ -104,9 +105,7 @@ export default async function StockDetailPage({ params }: StockPageParams) {
       <div className="stock-detail-grid">
         <div className="stock-chart-column">
           <div className="stock-section-heading"><h2><BarChart3 size={18} />株価チャート</h2><span>日足 / JPY</span></div>
-          {candles.length > 0 ? <CandleChart data={candles} /> : <div className="terminal-panel stock-empty">チャートデータがありません。</div>}
-          <div className="stock-section-heading stock-volume-heading"><h2>出来高</h2><span>株</span></div>
-          {volumesData.timestamps.length > 0 ? <VolumeChart VolumeData={volumesData} height={190} /> : <div className="terminal-panel stock-empty">出来高データがありません。</div>}
+          {candles.length > 0 ? <StockDetailChart key={stock.code} candles={candles} volumes={volumesData} /> : <div className="terminal-panel stock-empty">チャートデータがありません。</div>}
         </div>
         <aside className="stock-sidebar">
           <section className="terminal-panel stock-metrics"><p className="eyebrow">FUNDAMENTALS</p><h2>指標・統計</h2><dl>{metrics.map(([label, value, unit]) => <div key={label}><dt>{label}</dt><dd>{value}<small>{value !== "—" && unit}</small></dd></div>)}</dl></section>
@@ -115,7 +114,7 @@ export default async function StockDetailPage({ params }: StockPageParams) {
         </aside>
       </div>
       <StockTechnicalPanel key={`technicals-${stock.code}`} stockCode={stock.code} dailyCandles={candles} dailyVolumes={volumesData} />
-      <section className="terminal-panel stock-discussion"><div className="stock-section-heading"><h2><MessageSquare size={18} />銘柄コメント</h2><span>{comments.length} 件</span></div><CommentForm stockCode={stock.code} /><CommentList comments={comments} user={user?.user} /></section>
+      <section id="stock-comments" aria-label="銘柄コメント" className="terminal-panel stock-discussion"><div className="stock-section-heading"><h2><MessageSquare size={18} />銘柄コメント</h2><span>{comments.length} 件</span></div><CommentForm stockCode={stock.code} isAuthenticated={Boolean(user?.user)} /><CommentList comments={comments} user={user?.user} /></section>
     </div>
   );
 }

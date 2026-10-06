@@ -18,6 +18,7 @@ import type {
 import styles from "./trading-chart.module.css";
 
 type Interval = "1m" | "5m" | "15m" | "daily" | "weekly";
+export type ChartPreset = "standard" | "daytrade" | "trend";
 type Average = {
   id: string;
   type: "sma" | "ema";
@@ -85,6 +86,7 @@ type Props = {
   points: TechnicalPoint[];
   interval: Interval;
   levels: TechnicalLevels;
+  initialPreset?: ChartPreset;
   height?: number;
 };
 const DEFAULT_AVERAGES: Average[] = [
@@ -111,6 +113,30 @@ const DEFAULT_PANELS: Record<Panel, boolean> = {
   dmi: false,
   atr: false,
 };
+function presetSettings(preset: ChartPreset, intraday: boolean) {
+  return {
+    averages: DEFAULT_AVERAGES.map((average) => ({
+      ...average,
+      on:
+        preset === "standard"
+          ? average.id === "MA25"
+          : preset === "daytrade"
+            ? ["EMA9", "EMA20"].includes(average.id)
+            : ["MA5", "MA25", "MA75"].includes(average.id),
+    })),
+    extras: {
+      ...DEFAULT_EXTRAS,
+      bb: preset === "daytrade",
+      vwap: preset === "daytrade" && intraday,
+    },
+    panels: {
+      ...DEFAULT_PANELS,
+      volume: true,
+      rsi: preset === "daytrade",
+      macd: preset === "trend",
+    },
+  };
+}
 const COLORS = [
   "#63dbe8",
   "#ee9be0",
@@ -209,8 +235,10 @@ export default function TradingChart({
   points,
   interval,
   levels,
+  initialPreset = "standard",
   height = 400,
 }: Props) {
+  const intraday = interval !== "daily" && interval !== "weekly";
   const root = useRef<HTMLElement>(null);
   const svg = useRef<SVGSVGElement>(null);
   const drag = useRef<{
@@ -226,9 +254,15 @@ export default function TradingChart({
     count: Math.min(90, points.length),
   });
   const [period, setPeriod] = useState<number | null>(90);
-  const [averages, setAverages] = useState<Average[]>(DEFAULT_AVERAGES);
-  const [extras, setExtras] = useState(DEFAULT_EXTRAS);
-  const [panels, setPanels] = useState(DEFAULT_PANELS);
+  const [averages, setAverages] = useState<Average[]>(
+    () => presetSettings(initialPreset, intraday).averages,
+  );
+  const [extras, setExtras] = useState(
+    () => presetSettings(initialPreset, intraday).extras,
+  );
+  const [panels, setPanels] = useState(
+    () => presetSettings(initialPreset, intraday).panels,
+  );
   const [priceStyle, setPriceStyle] = useState<PriceStyle>("candle");
   const [hover, setHover] = useState<number | null>(null);
   const [pointerY, setPointerY] = useState<number | null>(null);
@@ -241,7 +275,6 @@ export default function TradingChart({
   const [horizontal, setHorizontal] = useState<number[]>([]);
   const [message, setMessage] = useState("");
   const [fullscreen, setFullscreen] = useState(false);
-  const intraday = interval !== "daily" && interval !== "weekly";
   const hasData = points.length > 0;
   const view = clampViewport(points.length, viewport);
   const shown = useMemo(
@@ -863,29 +896,11 @@ export default function TradingChart({
       n,
     );
   }
-  function applyPreset(preset: "standard" | "daytrade" | "trend") {
-    setAverages(
-      DEFAULT_AVERAGES.map((a) => ({
-        ...a,
-        on:
-          preset === "standard"
-            ? a.id === "MA25"
-            : preset === "daytrade"
-              ? ["EMA9", "EMA20"].includes(a.id)
-              : ["MA5", "MA25", "MA75"].includes(a.id),
-      })),
-    );
-    setExtras({
-      ...DEFAULT_EXTRAS,
-      bb: preset === "daytrade",
-      vwap: preset === "daytrade" && intraday,
-    });
-    setPanels({
-      ...DEFAULT_PANELS,
-      volume: true,
-      rsi: preset === "daytrade",
-      macd: preset === "trend",
-    });
+  function applyPreset(preset: ChartPreset) {
+    const settings = presetSettings(preset, intraday);
+    setAverages(settings.averages);
+    setExtras(settings.extras);
+    setPanels(settings.panels);
     setPriceStyle("candle");
     setMessage("");
   }

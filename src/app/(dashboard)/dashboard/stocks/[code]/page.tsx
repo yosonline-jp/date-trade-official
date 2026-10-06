@@ -192,8 +192,10 @@ export default async function StockDetailPage({ params }: StockPageParams) {
 					Googleファイナンス →
 				</Link>
 			</div>
-			<CommentForm stockCode={stock.code} />
-			<CommentList comments={comments} user={user?.user} />
+			<section id="stock-comments" aria-label="銘柄コメント">
+				<CommentForm stockCode={stock.code} isAuthenticated={Boolean(user?.user)} returnTo={"/dashboard/stocks/" + stock.code + "#stock-comments"} />
+				<CommentList comments={comments} user={user?.user} />
+			</section>
 		</div>
 	);
 }

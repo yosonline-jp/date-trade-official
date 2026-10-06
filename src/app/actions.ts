@@ -6,6 +6,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { SignupSchema } from "@/validations/signup";
+import { safeRedirectPath, signInUrl } from "@/lib/auth/redirect";
 
 
 
@@ -57,6 +58,7 @@ export const signUpAction = async (formData: z.infer<typeof SignupSchema>) => {
 export const signInAction = async (formData: FormData) => {
 	const email = formData.get("email") as string;
 	const password = formData.get("password") as string;
+	const redirectTo = safeRedirectPath(formData.get("redirect_to"));
 	const supabase = await createClient();
 
 	const { error } = await supabase.auth.signInWithPassword({
@@ -81,10 +83,10 @@ export const signInAction = async (formData: FormData) => {
 				errorText = error.message;
 				break;
 		}
-		return encodedRedirect("error", "/sign-in", errorText);
+		return redirect(signInUrl(redirectTo, errorText));
 	}
 
-	return redirect("/dashboard");
+	return redirect(redirectTo);
 };
 
 export const forgotPasswordAction = async (formData: FormData) => {

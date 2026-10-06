@@ -1,25 +1,24 @@
 ﻿import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
+import { safeRedirectPath, signInUrl } from "@/lib/auth/redirect";
 export async function GET(request: Request) {
   const url = new URL(request.url);
   const code = url.searchParams.get("code");
-  const target = url.searchParams.get("redirect_to");
-  const next =
-    target?.startsWith("/") &&
-    !target.startsWith("//") &&
-    !target.includes("\\")
-      ? target
-      : "/dashboard";
+  const next = safeRedirectPath(url.searchParams.get("redirect_to"));
   const site = process.env.NEXT_PUBLIC_MAIN_URL;
   const origin = site
     ? new URL(site.startsWith("http") ? site : `https://${site}`).origin
     : url.origin;
   if (code) {
-    const db = await createClient();
-    const { error } = await db.auth.exchangeCodeForSession(code);
-    if (!error) return NextResponse.redirect(new URL(next, origin));
+    try {
+      const db = await createClient();
+      const { error } = await db.auth.exchangeCodeForSession(code);
+      if (!error) return NextResponse.redirect(new URL(next, origin));
+    } catch {
+      // Return to login with the destination intact if the exchange is unavailable.
+    }
   }
   return NextResponse.redirect(
-    new URL("/sign-in?error=認証リンクを確認してください", origin),
+    new URL(signInUrl(next, "認証リンクを確認してください"), origin),
   );
 }
