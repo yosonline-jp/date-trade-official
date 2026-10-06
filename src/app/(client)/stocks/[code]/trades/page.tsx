@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { createClient } from "@/utils/supabase/server";
 import { ensureFreshStock } from "@/lib/market/refresh";
+import { getStockTradeReviewData } from "@/lib/market/stock-trade-review";
 import WatchlistButton from "@/components/watchlist-btn";
 import StockDetailChart from "@/components/stock-detail-chart";
 import type { CandleRaw } from "@/components/stock-candle-chart";
@@ -60,12 +61,10 @@ export default async function StockTradeReviewPage({
   const supabase = await createClient();
   await ensureFreshStock(code).catch(() => undefined);
 
-  // The viewer's session keeps public/private record visibility governed by RLS.
+  // Trade history and personal aggregates are loaded separately below.
   const { data: stock, error: stockError } = await supabase
     .from("stocks")
-    .select(
-      "*, trades: trade_records(*, users(id, account, nickname, avatar)), watchlist(users(id, account, nickname, avatar))",
-    )
+    .select("*, watchlist(users(id, account, nickname, avatar))")
     .eq("code", code)
     .single();
   const { data: price, error: priceError } = await supabase
@@ -98,7 +97,12 @@ export default async function StockTradeReviewPage({
     );
   }
 
-  const records = stock.trades || [];
+  const {
+    publicRecords,
+    personalSummary,
+    historyUnavailable,
+    summaryUnavailable,
+  } = await getStockTradeReviewData(code);
   const watchlist = stock.watchlist || [];
   const candles: CandleRaw[] = [];
   const volumes: VolumeChartData = { timestamps: [], volumes: [] };
@@ -276,12 +280,15 @@ export default async function StockTradeReviewPage({
               取引を振り返る
             </h2>
           </div>
-          <p>この銘柄の閲覧できる記録を、リアル・デモ別に表示します。</p>
+          <p>公開されたトレードを、リアル・デモ別に表示します。</p>
         </div>
         <TradeRecordsTab
           key={stock.code}
           stockCode={stock.code}
-          initialRecords={records}
+          initialRecords={publicRecords}
+          personalSummary={personalSummary}
+          historyUnavailable={historyUnavailable}
+          summaryUnavailable={summaryUnavailable}
           watchlist={watchlist}
         />
       </section>

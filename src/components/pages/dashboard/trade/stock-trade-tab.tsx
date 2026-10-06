@@ -20,6 +20,10 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getPagination } from "@/lib/pagination";
+import type {
+  PersonalTradeSummary,
+  TradeSummaryMetrics,
+} from "@/lib/stock-trade-summary";
 import styles from "./stock-trade-tab.module.css";
 
 type NumberValue = number | string | null;
@@ -145,12 +149,12 @@ function EmptyState({
       <h3>
         {watchlist
           ? "ウォッチ中のトレーダーはまだいません"
-          : "取引記録はまだありません"}
+          : "公開トレードはまだありません"}
       </h3>
       <p>
         {watchlist
           ? "この銘柄をウォッチリストに登録したトレーダーがここに表示されます。"
-          : "この種類の取引が記録されると、損益やトレードメモをここで振り返れます。"}
+          : "この種類の公開トレードが追加されると、損益やトレードメモをここで確認できます。"}
       </p>
       {stockCode && (
         <Link
@@ -164,48 +168,46 @@ function EmptyState({
   );
 }
 
-function TradeSummary({ records }: { records: TradeRecord[] }) {
-  const values = records
-    .map((record) => numeric(record.profit))
-    .filter((value): value is number => value != null);
-  const total = values.reduce((sum, value) => sum + value, 0);
-  const hasProfit = values.length > 0;
-  const summary = [
+function TradeSummary({ summary }: { summary: TradeSummaryMetrics }) {
+  const stats = [
     {
       label: "記録数",
-      value: records.length ? number(records.length) : "—",
-      unit: records.length ? "件" : "",
+      value: number(summary.recordCount),
+      unit: "件",
       icon: NotebookPen,
     },
     {
       label: "合計損益",
-      value: hasProfit ? profit(total) : "—",
+      value: profit(summary.totalProfit),
       unit: "",
       icon: Wallet,
-      tone: hasProfit ? tone(total) : styles.neutral,
+      tone: tone(summary.totalProfit),
     },
     {
       label: "勝率",
-      value: hasProfit
-        ? number(
-            (values.filter((value) => value > 0).length / values.length) * 100,
-          )
-        : "—",
-      unit: hasProfit ? "%" : "",
+      value: number(summary.winRate),
+      unit: summary.winRate !== null ? "%" : "",
       icon: CirclePercent,
     },
     {
       label: "平均損益",
-      value: hasProfit ? profit(total / values.length) : "—",
+      value: profit(summary.averageProfit),
       unit: "",
       icon: BarChart3,
-      tone: hasProfit ? tone(total / values.length) : styles.neutral,
+      tone: tone(summary.averageProfit),
     },
   ];
   return (
     <>
-      <div className={styles.summary} aria-label="このタブの全記録の集計">
-        {summary.map((item) => (
+      <div className={styles.personalHeading}>
+        <h3>
+          <LockKeyhole size={14} aria-hidden="true" />
+          あなたのトレード成績
+        </h3>
+        <span>本人のみ</span>
+      </div>
+      <div className={styles.summary} aria-label="あなたのトレード成績">
+        {stats.map((item) => (
           <div key={item.label} className={styles.stat}>
             <span className={styles.statLabel}>
               <item.icon size={14} />
@@ -219,10 +221,10 @@ function TradeSummary({ records }: { records: TradeRecord[] }) {
         ))}
       </div>
       <p className={styles.summaryNote}>
-        このタブで閲覧できる全記録を集計しています。ページを切り替えても集計は変わりません。
-        {values.length < records.length && (
+        この銘柄のあなたの全トレード（公開・非公開）を集計しています。履歴のページを切り替えても集計は変わりません。
+        {summary.missingProfitCount > 0 && (
           <span>
-            損益未登録の {records.length - values.length}{" "}
+            損益未登録の {summary.missingProfitCount}{" "}
             件は、損益・勝率の集計から除外しています。
           </span>
         )}
@@ -374,16 +376,26 @@ export function TradeRecordsTab({
   initialRecords,
   watchlist,
   stockCode,
+  personalSummary = null,
+  summaryUnavailable = false,
+  historyUnavailable = false,
 }: {
   initialRecords: TradeRecord[];
   watchlist: WatchItem[];
   stockCode?: string;
+  personalSummary?: PersonalTradeSummary | null;
+  summaryUnavailable?: boolean;
+  historyUnavailable?: boolean;
 }) {
   const [activeTab, setActiveTab] = useState<TradeTab>("real");
   const records = useMemo(
     () => ({
-      real: initialRecords.filter((record) => record.type === "real"),
-      demo: initialRecords.filter((record) => record.type === "demo"),
+      real: initialRecords.filter(
+        (record) => record.type === "real" && record.visibility === "public",
+      ),
+      demo: initialRecords.filter(
+        (record) => record.type === "demo" && record.visibility === "public",
+      ),
     }),
     [initialRecords],
   );
@@ -475,16 +487,24 @@ export function TradeRecordsTab({
           const label = type === "real" ? "リアルトレード" : "デモトレード";
           return (
             <TabsContent className={styles.content} key={type} value={type}>
-              <TradeSummary records={records[type]} />
+              {personalSummary && (
+                <TradeSummary summary={personalSummary[type]} />
+              )}
+              {summaryUnavailable && (
+                <p className={styles.unavailable} role="status">
+                  あなたのトレード成績を読み込めませんでした。ページを再読み込みしてください。
+                </p>
+              )}
               <div className={styles.listHeading}>
                 <h3
                   tabIndex={-1}
-                  aria-label={label + "の一覧"}
+                  aria-label={label + "の公開トレード一覧"}
                   ref={(element) => {
                     listHeadings.current[type] = element;
                   }}
                 >
-                  TRADE HISTORY
+                  TRADE HISTORY{" "}
+                  <span className={styles.publicLabel}>公開トレード</span>
                 </h3>
                 <small>
                   {pagination.from > 0
@@ -493,10 +513,14 @@ export function TradeRecordsTab({
                       number(pagination.to) +
                       " / "
                     : ""}
-                  {number(records[type].length)} 件の記録
+                  {number(records[type].length)} 件の公開トレード
                 </small>
               </div>
-              {records[type].length ? (
+              {historyUnavailable ? (
+                <p className={styles.unavailable} role="status">
+                  公開トレードを読み込めませんでした。ページを再読み込みしてください。
+                </p>
+              ) : records[type].length ? (
                 <>
                   <div className={styles.cards}>
                     {records[type]
