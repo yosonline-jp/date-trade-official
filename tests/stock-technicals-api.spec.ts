@@ -99,8 +99,11 @@ function route(options: RouteOptions = {}) {
   return {
     requests,
     databaseCalls: () => databaseCalls,
-    get(code = "285A", interval?: string) {
-      const query = interval === undefined ? "" : `?interval=${interval}`;
+    get(code = "285A", interval?: string, limit?: string) {
+      const params = new URLSearchParams();
+      if (interval !== undefined) params.set("interval", interval);
+      if (limit !== undefined) params.set("limit", limit);
+      const query = params.size ? `?${params}` : "";
       return get(
         new Request(`http://localhost/api/stocks/${code}/technicals${query}`),
         {
@@ -213,4 +216,49 @@ test("technical API evaluates freshness from the end of the selected timeframe",
   const body = await response.json();
   expect(body.dataAt).toBe("2026-09-07T00:30:00.000Z");
   expect(body.source.marketState).toBe("OPEN");
+});
+
+test("technical API rejects invalid limits before database or provider access", async () => {
+  const api = route();
+  for (const limit of [
+    "",
+    "0",
+    "119",
+    "1501",
+    "120.5",
+    "120.0",
+    "-120",
+    "NaN",
+    "Infinity",
+    "1e3",
+    " 120 ",
+  ]) {
+    const response = await api.get("285A", "1m", limit);
+    expect(response.status).toBe(400);
+    expect(await response.json()).toMatchObject({
+      error: "表示本数は120〜1500の整数で指定してください。",
+    });
+  }
+  expect(api.databaseCalls()).toBe(0);
+  expect(api.requests).toEqual([]);
+});
+
+test("technical API supports 1200-bar chart payloads with full-history indicator warmup", async () => {
+  const bars = intradayHistory(7)["1m"];
+  const api = route({ bars, asOf: (bars.at(-1)!.time + 60) * 1000 });
+  const response = await api.get("285A", "1m", "1200");
+  expect(response.status).toBe(200);
+  const body = await response.json();
+  expect(body.points).toHaveLength(1200);
+  expect(body.source.bars).toBe(bars.length);
+  expect(body.points[0].ema100).toBe(
+    technicalSeries(bars)[bars.length - 1200].ema100,
+  );
+  expect(body.points[0].ema100).not.toBeNull();
+  expect(body.points.at(-1).time).toBe(bars.at(-1)!.time);
+  for (const limit of ["120", "1500"]) {
+    const boundary = await api.get("285A", "1m", limit);
+    expect(boundary.status).toBe(200);
+    expect((await boundary.json()).points).toHaveLength(Number(limit));
+  }
 });

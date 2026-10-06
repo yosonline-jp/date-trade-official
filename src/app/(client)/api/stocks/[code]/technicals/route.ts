@@ -19,7 +19,10 @@ export async function GET(
 ) {
   const { code } = await params;
   const headers = { "Cache-Control": "no-store" };
-  const interval = new URL(request.url).searchParams.get("interval") ?? "1m";
+  const query = new URL(request.url).searchParams;
+  const interval = query.get("interval") ?? "1m";
+  const rawLimit = query.get("limit");
+  const limit = rawLimit === null ? 240 : Number(rawLimit);
   if (typeof code !== "string" || !/^[0-9A-Z]{4,5}$/.test(code))
     return Response.json(
       { error: "銘柄コードが正しくありません。" },
@@ -28,6 +31,16 @@ export async function GET(
   if (interval !== "1m" && interval !== "5m" && interval !== "15m")
     return Response.json(
       { error: "時間足は1m・5m・15mから選択してください。" },
+      { status: 400, headers },
+    );
+  if (
+    (rawLimit !== null && !/^\d+$/.test(rawLimit)) ||
+    !Number.isInteger(limit) ||
+    limit < 120 ||
+    limit > 1500
+  )
+    return Response.json(
+      { error: "表示本数は120〜1500の整数で指定してください。" },
       { status: 400, headers },
     );
   try {
@@ -65,7 +78,7 @@ export async function GET(
       name: stock.name,
       interval,
       // Warm up indicators on all fetched history before limiting the payload.
-      points: technicalSeries(bars).slice(-240),
+      points: technicalSeries(bars).slice(-limit),
       levels: technicalLevels(bars, "intraday"),
       dataAt: new Date(dataAt * 1000).toISOString(),
       analyzedAt: new Date(asOf * 1000).toISOString(),

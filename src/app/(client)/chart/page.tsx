@@ -1,6 +1,7 @@
 ﻿import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
-import CandleChart, { type CandleRaw } from "@/components/stock-candle-chart";
+import type { CandleRaw } from "@/components/stock-candle-chart";
+import ChartWorkspace from "@/components/chart-workspace";
 import { createClient } from "@/utils/supabase/server";
 import { ensureFreshStock } from "@/lib/market/refresh";
 export const dynamic = "force-dynamic";
@@ -11,9 +12,8 @@ export default async function ChartPage({
   searchParams: Promise<{ code?: string }>;
 }) {
   const params = await searchParams;
-  const code = /^[0-9A-Z]{4,5}$/.test(params.code ?? "")
-    ? params.code!
-    : "7203";
+  const requestedCode = params.code?.trim().toUpperCase() ?? "";
+  const code = /^[0-9A-Z]{4,5}$/.test(requestedCode) ? requestedCode : "7203";
   const refreshError = await ensureFreshStock(code)
     .then(() => false)
     .catch(() => true);
@@ -29,13 +29,16 @@ export default async function ChartPage({
   ]);
   const raw = result.data?.data;
   const quote = raw?.indicators?.quote?.[0];
-  const candles: CandleRaw[] = (raw?.timestamp ?? [])
+  const candles: Array<CandleRaw & { volume?: number | null }> = (
+    raw?.timestamp ?? []
+  )
     .map((ts: number, i: number) => ({
       ts,
       open: quote?.open?.[i],
       high: quote?.high?.[i],
       low: quote?.low?.[i],
       close: quote?.close?.[i],
+      volume: quote?.volume?.[i] ?? null,
     }))
     .filter((v: CandleRaw) =>
       [v.open, v.high, v.low, v.close].every(
@@ -99,6 +102,9 @@ export default async function ChartPage({
         </div>
         <div className="chart-value">
           {latest ? `¥${latest.close.toLocaleString("ja-JP")}` : "—"}
+          <small className="block text-[10px] font-normal text-[#8ea5ba] mt-1">
+            保存済み日足の終値
+          </small>
         </div>
       </div>
       {(result.error || refreshError) && (
@@ -106,16 +112,7 @@ export default async function ChartPage({
           最新の株価を取得できませんでした。保存済みデータを表示しています。
         </p>
       )}
-      <CandleChart data={candles} height={480} />
-      {latest && (
-        <p className="chart-footnote">
-          最終データ{" "}
-          {new Date(latest.ts * 1000).toLocaleString("ja-JP", {
-            timeZone: "Asia/Tokyo",
-          })}{" "}
-          JST · リアルタイム配信ではありません。
-        </p>
-      )}
+      <ChartWorkspace key={code} stockCode={code} dailyCandles={candles} />
       <Link href={`/stocks/${code}`} className="terminal-button secondary mt-5">
         銘柄詳細・ウォッチリスト <ArrowUpRight size={15} />
       </Link>
