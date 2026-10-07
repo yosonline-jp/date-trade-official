@@ -3,8 +3,9 @@ import WatchNoteEditor, {
   type WatchNote,
 } from "@/components/journal/watch-note-editor";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { signInUrl } from "@/lib/auth/redirect";
+import { useRef, useState, useTransition } from "react";
 import { Trash2 } from "lucide-react";
 import MiniCandleChart, { type CandleRaw } from "./mini-candle-chart";
 import { removeFromWatchlist } from "@/app/actions/watchlist";
@@ -43,17 +44,30 @@ export default function WatchlistTable({
       (notesByCode.get(item.stock_code)?.category || "未分類") === category,
   );
   const router = useRouter();
+  const pathname = usePathname();
+  const [loginRequired, setLoginRequired] = useState(false);
   const [busy, startTransition] = useTransition();
   const [error, setError] = useState("");
+  const removing = useRef(false);
   const byCode = new Map(prices.map((price) => [price.code, price]));
   function remove(code: string) {
+    if (removing.current || loginRequired) return;
+    removing.current = true;
     setError("");
     startTransition(async () => {
       try {
-        await removeFromWatchlist(code);
-        router.refresh();
+        const result = await removeFromWatchlist(code);
+        if (result.status === "auth-required") {
+          setLoginRequired(true);
+        } else if (result.status === "error") {
+          setError(result.message);
+        } else {
+          router.refresh();
+        }
       } catch {
         setError("削除できませんでした。再度お試しください。");
+      } finally {
+        removing.current = false;
       }
     });
   }
@@ -79,6 +93,19 @@ export default function WatchlistTable({
           {filtered.length}銘柄
         </span>
       </div>
+      {loginRequired && (
+        <div className="data-notice" role="status">
+          <p>
+            ログイン状態を確認できませんでした。ログインし直してからウォッチリストを更新してください。
+          </p>
+          <Link
+            className="terminal-button secondary mt-3"
+            href={signInUrl(pathname || "/watchlist")}
+          >
+            ログインし直す
+          </Link>
+        </div>
+      )}
       {editing && (
         <WatchNoteEditor
           code={editing.stock_code}
@@ -200,6 +227,7 @@ export default function WatchlistTable({
                         <button
                           className="terminal-button secondary compact watchlist-note-button"
                           type="button"
+                          disabled={loginRequired}
                           onClick={() => setEditing(item)}
                         >
                           メモ
@@ -207,7 +235,7 @@ export default function WatchlistTable({
                         <button
                           type="button"
                           className="watchlist-delete-button"
-                          disabled={busy}
+                          disabled={busy || loginRequired}
                           onClick={() => remove(item.stock_code)}
                           aria-label={`${item.stock_name}を削除`}
                         >

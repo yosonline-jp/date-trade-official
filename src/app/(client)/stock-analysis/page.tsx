@@ -19,5 +19,10 @@ export default async function StockAnalysisPage({
             .maybeSingle()
         ).data
       : null;
-  return <StockAnalysisWorkspace initialStock={initialStock ?? undefined} />;
+  return (
+    <StockAnalysisWorkspace
+      key={initialStock?.code ?? "search"}
+      initialStock={initialStock ?? undefined}
+    />
+  );
 }

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
+import { signInUrl } from "@/lib/auth/redirect";
 import { createClient, getRequestUser } from "@/utils/supabase/server";
 import { ensureFreshStocks } from "@/lib/market/refresh";
 import { watchlistSeries } from "@/lib/market/watchlist-series";
@@ -7,23 +8,26 @@ import WatchlistTable from "@/components/watchlist-list";
 import type { CandleRaw } from "@/components/mini-candle-chart";
 
 export async function WatchlistWorkspace() {
-  const db = await createClient();
   const {
     data: { user },
+    error: authError,
   } = await getRequestUser();
-  if (!user)
+  if (authError || !user?.id?.trim())
     return (
       <div className="page-heading">
         <div>
           <p className="eyebrow">YOUR FOCUS LIST</p>
           <h1>ウォッチリスト</h1>
-          <p>注目銘柄の株価とチャートをまとめて確認できます。</p>
+          <p>
+            注目銘柄の株価とチャートをまとめて確認できます。登録にはログインが必要です。
+          </p>
         </div>
-        <Link className="terminal-button" href="/sign-in">
+        <Link className="terminal-button" href={signInUrl("/watchlist")}>
           ログイン <ArrowUpRight size={15} />
         </Link>
       </div>
     );
+  const db = await createClient();
   const [watchlistResult, notesResult] = await Promise.all([
     db
       .from("watchlist")

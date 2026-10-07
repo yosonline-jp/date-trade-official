@@ -1,0 +1,32 @@
+.control {
+  display: grid;
+  justify-items: start;
+  gap: 8px;
+  min-width: 0;
+  max-width: 320px;
+}
+
+.button {
+  height: auto;
+  min-height: 36px;
+  max-width: 100%;
+  white-space: normal;
+  text-align: left;
+  font-size: 12px;
+}
+
+.hint,
+.error {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.75;
+  overflow-wrap: anywhere;
+}
+
+.hint {
+  color: var(--dt-text-muted);
+}
+
+.error {
+  color: var(--dt-negative);
+}

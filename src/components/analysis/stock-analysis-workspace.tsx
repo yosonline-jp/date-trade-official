@@ -4,6 +4,9 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { Loader2, Search, ArrowUpRight } from "lucide-react";
 import { useDebounce } from "@/hooks/use-debounce";
+import { useStockHistory } from "@/hooks/use-stock-history";
+import RecentStockHistory from "@/components/recent-stock-history";
+import type { HistoryEntry } from "@/lib/stock-history";
 import type { AnalysisResult, Interval, Stock } from "@/lib/analysis/types";
 import styles from "./stock-analysis.module.css";
 
@@ -20,6 +23,7 @@ const yen = (value: number | null | undefined) =>
 const percent = (value: number | null) =>
   value == null ? "算出不可" : `${number(value, 1)}%`;
 const trendLabels = { UP: "上昇", DOWN: "下降", RANGE: "レンジ" };
+type AnalysisView = { interval: Interval; chartOpen: boolean };
 
 export default function StockAnalysisWorkspace({
   initialStock,
@@ -36,6 +40,9 @@ export default function StockAnalysisWorkspace({
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [interval, setInterval] = useState<Interval>("1m");
   const [chartOpen, setChartOpen] = useState(false);
+  const { entries, ready, storageAvailable, remember, remove, clear } =
+    useStockHistory("analysis");
+  const completedStock = useRef<Stock | null>(null);
   const request = useRef<AbortController | null>(null);
   const searchRequest = useRef<AbortController | null>(null);
   const debounced = useDebounce(query, 350);
@@ -78,22 +85,35 @@ export default function StockAnalysisWorkspace({
     setBusy(false);
     setError("");
     setResult(null);
+    completedStock.current = null;
     setChartOpen(false);
   }
-  async function analyze() {
-    if (!selected || busy) return;
+  function rememberAnalysis(stock: Stock, view: AnalysisView) {
+    remember({
+      ...stock,
+      timeframe: view.interval,
+      preset: "standard",
+      chartOpen: view.chartOpen,
+    });
+  }
+  async function analyze(
+    stock: Stock,
+    view: AnalysisView = { interval: "1m", chartOpen: false },
+  ) {
+    if (busy) return;
     request.current?.abort();
     const controller = new AbortController();
     request.current = controller;
     setBusy(true);
     setError("");
     setResult(null);
+    completedStock.current = null;
     setChartOpen(false);
     try {
       const response = await fetch("/api/stock-analysis", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ symbol: selected.code }),
+        body: JSON.stringify({ symbol: stock.code }),
         signal: AbortSignal.any([
           controller.signal,
           AbortSignal.timeout(75_000),
@@ -103,9 +123,23 @@ export default function StockAnalysisWorkspace({
         error?: string;
       };
       if (!response.ok) throw new Error(data.error ?? "分析できませんでした。");
+      if (
+        data.symbol !== stock.code ||
+        typeof data.name !== "string" ||
+        !data.name.trim()
+      )
+        throw new Error("分析結果を確認できませんでした。再度お試しください。");
       if (!controller.signal.aborted) {
         setResult(data);
-        setInterval("1m");
+        setInterval(view.interval);
+        setChartOpen(view.chartOpen);
+        const analyzedStock = {
+          code: data.symbol,
+          name: data.name,
+          market: stock.market,
+        };
+        completedStock.current = analyzedStock;
+        rememberAnalysis(analyzedStock, view);
       }
     } catch (cause) {
       if (!controller.signal.aborted)
@@ -119,6 +153,34 @@ export default function StockAnalysisWorkspace({
     } finally {
       if (!controller.signal.aborted) setBusy(false);
     }
+  }
+  function selectHistory(entry: HistoryEntry) {
+    if (busy) return;
+    reset();
+    const stock = { code: entry.code, name: entry.name, market: entry.market };
+    setSelected(stock);
+    setQuery(stock.code);
+    setStocks([]);
+    setSearchError("");
+    const savedInterval =
+      entry.timeframe === "5m" || entry.timeframe === "15m"
+        ? entry.timeframe
+        : "1m";
+    void analyze(stock, {
+      interval: savedInterval,
+      chartOpen: entry.chartOpen,
+    });
+  }
+  function changeInterval(value: Interval) {
+    setInterval(value);
+    if (result && completedStock.current)
+      rememberAnalysis(completedStock.current, { interval: value, chartOpen });
+  }
+  function toggleChart() {
+    const open = !chartOpen;
+    setChartOpen(open);
+    if (result && completedStock.current)
+      rememberAnalysis(completedStock.current, { interval, chartOpen: open });
   }
   return (
     <div className={styles.workspace}>
@@ -140,7 +202,7 @@ export default function StockAnalysisWorkspace({
         <form
           onSubmit={(event) => {
             event.preventDefault();
-            void analyze();
+            if (selected) void analyze(selected);
           }}
         >
           <label htmlFor="analysis-stock-search">
@@ -225,9 +287,20 @@ export default function StockAnalysisWorkspace({
           </p>
         )}
         <p className={styles.note}>
-          分析はボタンを押したときに実行します。同じ銘柄の短時間の再分析は最大60秒間キャッシュします。
+          分析ボタン、または履歴の銘柄を押すと分析します。同じ銘柄の短時間の再分析は最大60秒間キャッシュします。
         </p>
       </section>
+      <RecentStockHistory
+        kind="analysis"
+        entries={entries}
+        ready={ready}
+        storageAvailable={storageAvailable}
+        onSelect={selectHistory}
+        onRemove={remove}
+        onClear={clear}
+        disabled={busy}
+        currentCode={result?.symbol}
+      />
       {busy && (
         <p className="data-notice" role="status">
           1分・5分・15分足を取得し、指標と過去の類似局面を分析しています…
@@ -560,7 +633,7 @@ export default function StockAnalysisWorkspace({
             <button
               className="terminal-button secondary"
               aria-expanded={chartOpen}
-              onClick={() => setChartOpen(!chartOpen)}
+              onClick={toggleChart}
             >
               {chartOpen ? "チャートを閉じる" : "チャートを表示"}
             </button>
@@ -574,7 +647,7 @@ export default function StockAnalysisWorkspace({
                   {(["1m", "5m", "15m"] as Interval[]).map((value) => (
                     <button
                       key={value}
-                      onClick={() => setInterval(value)}
+                      onClick={() => changeInterval(value)}
                       aria-pressed={interval === value}
                     >
                       {value === "1m"

@@ -87,6 +87,7 @@ type Props = {
   interval: Interval;
   levels: TechnicalLevels;
   initialPreset?: ChartPreset;
+  onPresetChange?: (preset: ChartPreset) => void;
   height?: number;
 };
 const DEFAULT_AVERAGES: Average[] = [
@@ -236,6 +237,7 @@ export default function TradingChart({
   interval,
   levels,
   initialPreset = "standard",
+  onPresetChange,
   height = 400,
 }: Props) {
   const intraday = interval !== "daily" && interval !== "weekly";
@@ -903,6 +905,7 @@ export default function TradingChart({
     setPanels(settings.panels);
     setPriceStyle("candle");
     setMessage("");
+    onPresetChange?.(preset);
   }
   function addAverage(event: React.FormEvent) {
     event.preventDefault();

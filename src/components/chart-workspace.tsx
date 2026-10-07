@@ -1,8 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Loader2, RefreshCw } from "lucide-react";
-import TradingChart from "./trading-chart";
+import TradingChart, { type ChartPreset } from "./trading-chart";
+import RecentStockHistory from "@/components/recent-stock-history";
+import { useStockHistory } from "@/hooks/use-stock-history";
+import type { HistoryEntry } from "@/lib/stock-history";
 import type { CandleRaw } from "./stock-candle-chart";
 import {
   savedChartPoints,
@@ -53,20 +57,34 @@ const minuteFormat = new Intl.DateTimeFormat("ja-JP", {
 
 export default function ChartWorkspace({
   stockCode,
+  stockName,
+  stockMarket,
   dailyCandles,
+  initialTimeframe = "daily",
+  initialPreset = "standard",
 }: {
   stockCode: string;
+  stockName?: string;
+  stockMarket?: string | null;
   dailyCandles: Array<CandleRaw & { volume?: number | null }>;
+  initialTimeframe?: Timeframe;
+  initialPreset?: ChartPreset;
 }) {
-  const [timeframe, setTimeframe] = useState<Timeframe>("daily");
+  const router = useRouter();
+  const { entries, ready, storageAvailable, remember, remove, clear } =
+    useStockHistory("chart");
+  const [timeframe, setTimeframe] = useState<Timeframe>(initialTimeframe);
+  const [preset, setPreset] = useState<ChartPreset>(initialPreset);
+  const [restoreVersion, setRestoreVersion] = useState(0);
   const [intraday, setIntraday] = useState<StockTechnicalData | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(
+    initialTimeframe !== "daily" && initialTimeframe !== "weekly",
+  );
   const [error, setError] = useState("");
   const request = useRef<AbortController | null>(null);
   const cache = useRef(
     new Map<Interval, { data: StockTechnicalData; expires: number }>(),
   );
-  useEffect(() => () => request.current?.abort(), []);
 
   const saved = useMemo(() => {
     const daily = savedChartPoints(dailyCandles);
@@ -90,8 +108,14 @@ export default function ChartWorkspace({
       },
     };
   }, [dailyCandles]);
-  const [dataset, setDataset] = useState<ChartDataset>(saved.daily);
+  const savedRef = useRef(saved);
+  const [dataset, setDataset] = useState<ChartDataset>(() =>
+    initialTimeframe === "daily" || initialTimeframe === "weekly"
+      ? saved[initialTimeframe]
+      : { points: [], interval: initialTimeframe, levels: saved.daily.levels },
+  );
   useEffect(() => {
+    savedRef.current = saved;
     setDataset((previous) =>
       previous.interval === "daily" || previous.interval === "weekly"
         ? saved[previous.interval]
@@ -100,89 +124,173 @@ export default function ChartWorkspace({
   }, [saved]);
   const local = timeframe === "daily" || timeframe === "weekly";
 
-  async function selectTimeframe(next: Timeframe, refresh = false) {
-    request.current?.abort();
-    request.current = null;
-    setTimeframe(next);
-    setError("");
-    if (next === "daily" || next === "weekly") {
-      setDataset(saved[next]);
-      setLoading(false);
-      return;
-    }
-    const previous = cache.current.get(next);
-    if (!refresh && previous && previous.expires > Date.now()) {
-      setIntraday(previous.data);
-      setDataset({
-        points: previous.data.points,
-        interval: next,
-        levels: previous.data.levels,
-      });
-      setLoading(false);
-      return;
-    }
-    const controller = new AbortController();
-    request.current = controller;
-    setLoading(true);
-    setIntraday(null);
-    try {
-      const response = await fetch(
-        `/api/stocks/${encodeURIComponent(stockCode)}/technicals?interval=${next}&limit=1200`,
-        {
-          cache: "no-store",
-          signal: AbortSignal.any([
-            controller.signal,
-            AbortSignal.timeout(75_000),
-          ]),
-        },
-      );
-      const result: StockTechnicalData | { error: string } =
-        await response.json();
-      if (!response.ok || "error" in result)
-        throw new Error(
-          "error" in result
-            ? result.error
-            : "分足の株価を取得できませんでした。",
-        );
-      if (
-        result.symbol !== stockCode ||
-        result.interval !== next ||
-        !Array.isArray(result.points)
-      )
-        throw new Error("選択した銘柄・時間足のデータを取得できませんでした。");
-      if (!controller.signal.aborted) {
-        const now = Date.now();
-        cache.current.set(next, {
-          data: result,
-          expires: Math.min(
-            now + 60_000,
-            (Math.floor(now / 60_000) + 1) * 60_000,
-          ),
-        });
-        setIntraday(result);
+  const selectTimeframe = useCallback(
+    async (next: Timeframe, refresh = false) => {
+      request.current?.abort();
+      request.current = null;
+      setTimeframe(next);
+      setError("");
+      if (next === "daily" || next === "weekly") {
+        setDataset(savedRef.current[next]);
+        setLoading(false);
+        return;
+      }
+      const previous = cache.current.get(next);
+      if (!refresh && previous && previous.expires > Date.now()) {
+        setIntraday(previous.data);
         setDataset({
-          points: result.points,
+          points: previous.data.points,
           interval: next,
-          levels: result.levels,
+          levels: previous.data.levels,
+        });
+        setLoading(false);
+        return;
+      }
+      const controller = new AbortController();
+      request.current = controller;
+      setLoading(true);
+      setIntraday(null);
+      try {
+        const response = await fetch(
+          `/api/stocks/${encodeURIComponent(stockCode)}/technicals?interval=${next}&limit=1200`,
+          {
+            cache: "no-store",
+            signal: AbortSignal.any([
+              controller.signal,
+              AbortSignal.timeout(75_000),
+            ]),
+          },
+        );
+        const result: StockTechnicalData | { error: string } =
+          await response.json();
+        if (!response.ok || "error" in result)
+          throw new Error(
+            "error" in result
+              ? result.error
+              : "分足の株価を取得できませんでした。",
+          );
+        if (
+          result.symbol !== stockCode ||
+          result.interval !== next ||
+          !Array.isArray(result.points)
+        )
+          throw new Error(
+            "選択した銘柄・時間足のデータを取得できませんでした。",
+          );
+        if (!controller.signal.aborted) {
+          const now = Date.now();
+          cache.current.set(next, {
+            data: result,
+            expires: Math.min(
+              now + 60_000,
+              (Math.floor(now / 60_000) + 1) * 60_000,
+            ),
+          });
+          setIntraday(result);
+          setDataset({
+            points: result.points,
+            interval: next,
+            levels: result.levels,
+          });
+        }
+      } catch (cause) {
+        if (!controller.signal.aborted)
+          setError(
+            cause instanceof Error && /timeout|abort/i.test(cause.name)
+              ? "分足の取得がタイムアウトしました。再度お試しください。"
+              : cause instanceof Error
+                ? cause.message
+                : "分足の株価を取得できませんでした。",
+          );
+      } finally {
+        if (!controller.signal.aborted) setLoading(false);
+      }
+    },
+    [stockCode],
+  );
+
+  useEffect(() => {
+    if (initialTimeframe !== "daily" && initialTimeframe !== "weekly") {
+      void selectTimeframe(initialTimeframe);
+    }
+    return () => request.current?.abort();
+  }, [initialTimeframe, selectTimeframe]);
+
+  useEffect(() => {
+    // Save only a successfully displayed dataset, never a previous frame while
+    // another frame is loading. Entry updates/removal are not effect triggers.
+    if (
+      !ready ||
+      loading ||
+      error ||
+      dataset.interval !== timeframe ||
+      !dataset.points.length
+    )
+      return;
+    remember({
+      code: stockCode,
+      name: stockName || stockCode,
+      market: stockMarket ?? null,
+      timeframe,
+      preset,
+      chartOpen: true,
+    });
+  }, [
+    ready,
+    loading,
+    error,
+    dataset,
+    timeframe,
+    preset,
+    restoreVersion,
+    stockCode,
+    stockName,
+    stockMarket,
+    remember,
+  ]);
+
+  function selectHistory(entry: HistoryEntry) {
+    const query = new URLSearchParams({
+      code: entry.code,
+      interval: entry.timeframe,
+      preset: entry.preset,
+    });
+    // Query changes remount the workspace through the server page's key.
+    // A same-query selection still needs an explicit reset because local
+    // controls may have changed since that URL was opened.
+    if (
+      entry.code === stockCode &&
+      entry.timeframe === initialTimeframe &&
+      entry.preset === initialPreset
+    ) {
+      setPreset(entry.preset);
+      setRestoreVersion((version) => version + 1);
+      if (entry.timeframe !== "daily" && entry.timeframe !== "weekly") {
+        setDataset({
+          points: [],
+          interval: entry.timeframe,
+          levels: savedRef.current.daily.levels,
         });
       }
-    } catch (cause) {
-      if (!controller.signal.aborted)
-        setError(
-          cause instanceof Error && /timeout|abort/i.test(cause.name)
-            ? "分足の取得がタイムアウトしました。再度お試しください。"
-            : cause instanceof Error
-              ? cause.message
-              : "分足の株価を取得できませんでした。",
-        );
-    } finally {
-      if (!controller.signal.aborted) setLoading(false);
+      void selectTimeframe(entry.timeframe);
     }
+    router.push("/chart?" + query.toString());
   }
 
   const latestSaved = saved.daily.points.at(-1);
   return (
     <section className={styles.workspace} aria-label="チャートワークスペース">
+      <RecentStockHistory
+        kind="chart"
+        entries={entries}
+        ready={ready}
+        storageAvailable={storageAvailable}
+        onSelect={selectHistory}
+        onRemove={remove}
+        onClear={clear}
+        disabled={loading}
+        currentCode={stockCode}
+      />
       <div className={styles.toolbar}>
         <div
           role="group"
@@ -239,6 +347,9 @@ export default function ChartWorkspace({
       )}
       <div hidden={loading || Boolean(error)}>
         <TradingChart
+          key={restoreVersion}
+          initialPreset={preset}
+          onPresetChange={setPreset}
           points={dataset.points}
           interval={dataset.interval}
           levels={dataset.levels}

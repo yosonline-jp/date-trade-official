@@ -340,6 +340,9 @@ test("crosshair, two-point measurement, horizontal prices and missing volume use
   await expect(svg.locator("[data-candle]")).toHaveCount(30);
   await expect(svg.locator("[data-volume]")).toHaveCount(29);
   await svg.focus();
+  // Start keyboard checks at the latest bar independently of pointer hover.
+  await svg.press("End");
+  await expect(svg.locator('[data-crosshair="true"]')).toHaveCount(0);
   await svg.press("ArrowLeft");
   await expect(svg.locator('[data-crosshair="true"]')).toHaveCount(1);
   await expect(
@@ -350,6 +353,9 @@ test("crosshair, two-point measurement, horizontal prices and missing volume use
   await chart.getByRole("button", { name: "平均足", exact: true }).click();
   await chart.getByRole("button", { name: "2点測定 OFF", exact: true }).click();
   await svg.focus();
+  // Start keyboard checks at the latest bar independently of pointer hover.
+  await svg.press("End");
+  await expect(svg.locator('[data-crosshair="true"]')).toHaveCount(0);
   await svg.press("ArrowLeft");
   await svg.press("Enter");
   await svg.press("ArrowLeft");

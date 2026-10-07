@@ -9,11 +9,30 @@ export const metadata = { title: "株価チャート | デイトレード.net" }
 export default async function ChartPage({
   searchParams,
 }: {
-  searchParams: Promise<{ code?: string }>;
+  searchParams: Promise<{
+    code?: string | string[];
+    interval?: string | string[];
+    preset?: string | string[];
+  }>;
 }) {
   const params = await searchParams;
-  const requestedCode = params.code?.trim().toUpperCase() ?? "";
+  const requestedCode =
+    typeof params.code === "string" ? params.code.trim().toUpperCase() : "";
   const code = /^[0-9A-Z]{4,5}$/.test(requestedCode) ? requestedCode : "7203";
+  const initialTimeframe =
+    params.interval === "1m" ||
+    params.interval === "5m" ||
+    params.interval === "15m" ||
+    params.interval === "weekly" ||
+    params.interval === "daily"
+      ? params.interval
+      : "daily";
+  const initialPreset =
+    params.preset === "daytrade" ||
+    params.preset === "trend" ||
+    params.preset === "standard"
+      ? params.preset
+      : "standard";
   const refreshError = await ensureFreshStock(code)
     .then(() => false)
     .catch(() => true);
@@ -112,7 +131,15 @@ export default async function ChartPage({
           最新の株価を取得できませんでした。保存済みデータを表示しています。
         </p>
       )}
-      <ChartWorkspace key={code} stockCode={code} dailyCandles={candles} />
+      <ChartWorkspace
+        key={code + ":" + initialTimeframe + ":" + initialPreset}
+        stockCode={code}
+        stockName={stock.data?.name || code}
+        stockMarket={stock.data?.market ?? null}
+        dailyCandles={candles}
+        initialTimeframe={initialTimeframe}
+        initialPreset={initialPreset}
+      />
       <Link href={`/stocks/${code}`} className="terminal-button secondary mt-5">
         銘柄詳細・ウォッチリスト <ArrowUpRight size={15} />
       </Link>
